@@ -37,6 +37,7 @@
 | DeepLabV3 | R-101-D8 | 769x769   |   8   |   40000 |     10.9 |           0.83 | 79.27 |         80.11 | 
 | DeepLabV3 | R-101-D8 | 512x1024  |   8   |   80000 | -        | -              | 80.20 |         81.21 |
 | DeepLabV3 | R-101-D8 | 512x1024   |   16   |   40000 |     10.9 |           0.83 | 79.13 |        - | 
+| DeepLabv3  | R-101-D8 | 512x1024  | 16 |   60000 |   -  |    -  |   80.10,79.96  |        - |  
 | DeepLabv3 (w/ SepDepthWiseConv)  | R-101-D8 | 512x1024  | 16 |   40000 |   -  |    -  |   80.48  |
 | DeepLabV3+ | R-101-D8 | 512x1024  |  8   |   40000 |     11 |        2.60 | 80.21 |         81.82 | 
 | DeepLabV3+ | R-101-D8 | 512x1024  |  16   |   40000 |     11 |        2.60 | -  |        - |
@@ -55,12 +56,13 @@
 | OCRNetPlus | R-101-D8 | 512x1024  | 8 |   40000 |   -  |    -  |   79.90  | 
 | OCRNetPlus (Decoder w/ SepDepthWiseConv)   | R-101-D8 | 512x1024  | 8 |   40000 |   -  |    -  |   80.33  | -  |
 | OCRNetPlus (Decoder w/ SepDepthWiseConv)   | R-101-D8 | 512x1024  | 8 |   60000 |   -  |    -  |   80.17  | -  |
-| OCRNetPlus (Decoder w/ SepDepthWiseConv)   | R-101-D8 | 512x1024  | 8 |   80000 |   -  |    -  |   -  |
+| OCRNetPlus (Decoder w/ SepDepthWiseConv)   | R-101-D8 | 512x1024  | 8 |   80000 |   -  |    -  |   80.77  |
 | OCRNetPlus (Decoder w/ SepDepthWiseConv)   | R-101-D8 | 512x1024  | 16 |   40000 |   -  |   -  |  80.44, 80.73  |  -  |
 | OCRNetPlus (Decoder w/ SepDepthWiseConv)   | R-101-D8 | 512x1024  | 16 |   60000 |   -  |   -  |  80.77  |  -  |
 | OCRNetPlus (OCR & Decoder w/ SepDepthWiseConv)   | R-101-D8 | 512x1024  | 8 |   40000 |   -  |  -  |  79.99  |   -  |  
 | OCRNetPlus (OCR & Decoder w/ SepDepthWiseConv)   | R-101-D8 | 512x1024  | 8 |   60000 |   -  |  -  |  80.15  |   -  |  
-| OCRNetPlus (OCR & Decoder w/ SepDepthWiseConv)   | R-101-D8 | 512x1024  | 16 |   40000 |   -  |  -  |  80.91,80.36,80.08  |   -  |     
+| OCRNetPlus (OCR & Decoder w/ SepDepthWiseConv)   | R-101-D8 | 512x1024  | 16 |   40000 |   -  |  -  |  80.91,80.36,80.08  |   -  |
+| OCRNetPlus (OCR & Decoder w/ SepDepthWiseConv)   | R-101-D8 | 512x1024  | 8 |   60000 |   -  |  -  |  80.15  |   -  |     
 | OCRNetPlus (OCR & Decoder w/ SepDepthWiseConv)   | R-101-D8 | 512x1024  | 16 |   60000 |   -  |  -  |  80.82,81.03,80.82  |   -  | 
 
 
@@ -91,7 +93,7 @@
 | OCRNet  | R-101-D8  | 512x512   |  16  |    160000  |    -  | -  |   44.38  | - |
 | OCRNet  | R-101-D8  | 512x512   |  32  |    80000  |    -  | -  |   44.02  | - |
 | OCRNetPlus (Decoder w/ SepDepthWiseConv)  | R-101-D8  | 512x512   |  16  |    160000 |    -  | -  |   44.33  |  -  |
-| OCRNetPlus (OCR & Decoder w/ SepDepthWiseConv)   | R-101-D8  | 512x512   |  16  |    160000 |    -  | -  |  -  |  -  |
+| OCRNetPlus (OCR & Decoder w/ SepDepthWiseConv)   | R-101-D8  | 512x512   |  16  |    160000 |    -  | -  |  44.10,44.73  |  -  |
 
 ### Pascal VOC 2012 + Aug
 | Method |      Backbone      | Crop Size | Lr schd | Mem (GB) | Inf time (fps) | mIoU  | mIoU(ms+flip) |                                                                                                                                                                                       download                                                                                                                                                                                       |
