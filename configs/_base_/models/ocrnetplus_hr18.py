@@ -63,7 +63,7 @@ model = dict(
             loss_decode=dict(
                 type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0)),
         dict(
-            type='OCRPlusHead',
+            type='DepthwiseSeparableOCRPlusHead',
             in_channels=[18, 36, 72, 144],
             in_index=(0, 1, 2, 3),
             input_transform='resize_concat',
