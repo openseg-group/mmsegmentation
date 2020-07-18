@@ -28,20 +28,37 @@ model = dict(
             norm_cfg=norm_cfg,
             align_corners=False,
             loss_decode=dict(
-                type='CrossEntropyLoss', use_sigmoid=False, loss_weight=0.4)),
+                type='CrossEntropyLoss', use_sigmoid=False, loss_weight=0.4,
+                class_weight=[
+                    0.8373, 0.9180, 0.8660, 1.0345, 1.0166, 0.9969, 0.9754,
+                    1.0489, 0.8786, 1.0023, 0.9539, 0.9843, 1.1116, 0.9037,
+                    1.0865, 1.0955, 1.0865, 1.1529, 1.0507
+                ]
+            )
+        ),
         dict(
-            type='OCRHead',
+            type='DepthwiseSeparableOCRPlusHead',
             in_channels=2048,
             in_index=3,
             channels=512,
             ocr_channels=256,
+            c1_in_channels=256,
+            c1_channels=48,
             drop_out_ratio=0.1,
             num_classes=19,
             norm_cfg=norm_cfg,
             align_corners=False,
             loss_decode=dict(
-                type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0))
-    ])
+                type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1,
+                class_weight=[
+                    0.8373, 0.9180, 0.8660, 1.0345, 1.0166, 0.9969, 0.9754,
+                    1.0489, 0.8786, 1.0023, 0.9539, 0.9843, 1.1116, 0.9037,
+                    1.0865, 1.0955, 1.0865, 1.1529, 1.0507
+                ]
+            )
+        )
+    ]
+)
 # model training and testing settings
 train_cfg = dict()
 test_cfg = dict(mode='whole')

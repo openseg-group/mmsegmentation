@@ -23,17 +23,15 @@ model = dict(
             loss_decode=dict(
                 type='CrossEntropyLoss', use_sigmoid=False, loss_weight=0.4)),
         dict(
-            type='OCRPlusHead',
+            type='OCRHead',
             in_channels=2048,
             in_index=3,
             channels=512,
             ocr_channels=256,
-            c1_in_channels=256,
-            c1_channels=48,
-            use_sep_conv=False,
             drop_out_ratio=0.1,
             num_classes=19,
             norm_cfg=norm_cfg,
+            use_sep_conv=True,
             align_corners=False,
             loss_decode=dict(
                 type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0))

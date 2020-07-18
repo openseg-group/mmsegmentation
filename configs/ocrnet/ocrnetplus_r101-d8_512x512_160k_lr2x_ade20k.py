@@ -2,7 +2,7 @@ _base_ = [
     '../_base_/models/ocrnetplus_r50-d8.py', 
     '../_base_/datasets/ade20k.py',
     '../_base_/default_runtime.py', 
-    '../_base_/schedules/schedule_160k_2x.py'
+    '../_base_/schedules/schedule_160k_lr2x.py'
 ]
 norm_cfg = dict(type='SyncBN', requires_grad=True)
 model = dict(

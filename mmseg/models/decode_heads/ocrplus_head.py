@@ -1,65 +1,17 @@
 import torch
 import torch.nn as nn
 from mmcv.cnn import ConvModule
+from functools import partial
 
 from mmseg.ops import DepthwiseSeparableConvModule, resize
 from ..builder import HEADS
 from ..utils import SelfAttentionBlock as _SelfAttentionBlock
 from .cascade_decode_head import BaseCascadeDecodeHead
-from .ocr_head import SpatialGatherModule
-
-
-class DepthwiseSeparableObjectAttentionBlock(_SelfAttentionBlock):
-    """
-    We replace the original 1x1 conv with a
-    separable 3x3 conv within the self.bottleneck.
-    """
-
-    def __init__(self, in_channels, channels, scale, conv_cfg, norm_cfg,
-                 act_cfg):
-        if scale > 1:
-            query_downsample = nn.MaxPool2d(kernel_size=scale)
-        else:
-            query_downsample = None
-        super(DepthwiseSeparableObjectAttentionBlock, self).__init__(
-            key_in_channels=in_channels,
-            query_in_channels=in_channels,
-            channels=channels,
-            out_channels=in_channels,
-            share_key_query=False,
-            query_downsample=query_downsample,
-            key_downsample=None,
-            key_query_num_convs=2,
-            key_query_norm=True,
-            value_out_num_convs=1,
-            value_out_norm=True,
-            matmul_norm=True,
-            with_out=True,
-            conv_cfg=conv_cfg,
-            norm_cfg=norm_cfg,
-            act_cfg=act_cfg)
-
-        self.bottleneck = DepthwiseSeparableConvModule(
-            in_channels * 2,
-            in_channels,
-            3,
-            padding=1,
-            norm_cfg=self.norm_cfg,
-            act_cfg=self.act_cfg)
-
-    def forward(self, query_feats, key_feats):
-        """Forward function."""
-        context = super(DepthwiseSeparableObjectAttentionBlock,
-                        self).forward(query_feats, key_feats)
-        output = self.bottleneck(torch.cat([context, query_feats], dim=1))
-        if self.query_downsample is not None:
-            output = resize(query_feats)
-
-        return output
+from .ocr_head import SpatialGatherModule, ObjectAttentionBlock
 
 
 @HEADS.register_module()
-class DepthwiseSeparableOCRPlusHead(BaseCascadeDecodeHead):
+class OCRPlusHead(BaseCascadeDecodeHead):
     """Object-Contextual Representations for Semantic Segmentation.
 
     This head is augment the original `OCRNet
@@ -70,8 +22,8 @@ class DepthwiseSeparableOCRPlusHead(BaseCascadeDecodeHead):
         from Res-2 stage following the DeepLabv3+
     -2- replace the 3x3 conv -> separable 3x3 conv that is used decrease
         the channel from 2048->512 (self.bottleneck)
-    -3- replace the ObjectAttentionBlock ->
-        DepthwiseSeparableObjectAttentionBlock
+    # -3- replace the ObjectAttentionBlock ->
+    #     DepthwiseSeparableObjectAttentionBlock
 
     Args:
         ocr_channels (int): The intermediate channels of OCR block.
@@ -86,21 +38,26 @@ class DepthwiseSeparableOCRPlusHead(BaseCascadeDecodeHead):
                  c1_in_channels,
                  c1_channels,
                  scale=1,
+                 use_sep_conv=False,
                  **kwargs):
-        super(DepthwiseSeparableOCRPlusHead, self).__init__(**kwargs)
+        super(OCRPlusHead, self).__init__(**kwargs)
         assert c1_in_channels >= 0
 
         self.ocr_channels = ocr_channels
         self.scale = scale
-        self.object_context_block = DepthwiseSeparableObjectAttentionBlock(
+        self.use_sep_conv = use_sep_conv
+
+        self.object_context_block = ObjectAttentionBlock(
             self.channels,
             self.ocr_channels,
             self.scale,
             conv_cfg=self.conv_cfg,
             norm_cfg=self.norm_cfg,
-            act_cfg=self.act_cfg)
-        self.spatial_gather_module = SpatialGatherModule(self.scale)
+            act_cfg=self.act_cfg,
+            use_sep_conv=self.use_sep_conv)
 
+        self.spatial_gather_module = SpatialGatherModule(self.scale)
+        
         self.bottleneck = DepthwiseSeparableConvModule(
             self.in_channels,
             self.channels,
@@ -155,4 +112,138 @@ class DepthwiseSeparableOCRPlusHead(BaseCascadeDecodeHead):
         output = self.fuse_bottleneck(output)
         output = self.cls_seg(output)
 
+        return output
+
+
+@HEADS.register_module()
+class OCRPlusHeadV2(BaseCascadeDecodeHead):
+    """Object-Contextual Representations for Semantic Segmentation.
+
+    This head is augment the original `OCRNet
+    <https://arxiv.org/abs/1909.11065>` with multiple decoder heads
+    following the panotpic deeplab.
+
+    Panoptic-DeepLab: A Simple, Strong, and Fast Baseline 
+    for Bottom-Up Panoptic Segmentation, CVPR2020
+
+    Args:
+        ocr_channels (int): The intermediate channels of OCR block.
+        feature_key (int): specify to apply the context module on 
+            which feature maps.  
+        low_level_key (int): specify a group of low-level features maps 
+            as inputs to the decoder.
+        low_level_channels_project (int): specify the output channels of 
+            the transformed low-level features.
+        decoder_channels: the output channels after each decoder.
+    """
+    def __init__(self, 
+                 ocr_channels, 
+                 feature_key, 
+                 low_level_channels, 
+                 low_level_key, 
+                 low_level_channels_project,
+                 decoder_channels,
+                 scale=1,
+                 use_sep_conv=False,
+                 **kargs):
+        super(OCRPlusHeadV2, self).__init__(**kargs)
+
+        self.ocr_channels = ocr_channels
+        self.scale=scale
+        self.use_sep_conv = use_sep_conv
+
+        self.feature_key = feature_key
+        self.decoder_stage = len(low_level_channels)
+        assert self.decoder_stage == len(low_level_key)
+        assert self.decoder_stage == len(low_level_channels_project)
+        self.low_level_key = low_level_key
+    
+        self.object_context_block = ObjectAttentionBlock(
+            self.channels,
+            self.ocr_channels,
+            self.scale,
+            conv_cfg=self.conv_cfg,
+            norm_cfg=self.norm_cfg,
+            act_cfg=self.act_cfg,
+            use_sep_conv=self.use_sep_conv)
+
+        self.spatial_gather_module = SpatialGatherModule(self.scale)
+
+        self.bottleneck = DepthwiseSeparableConvModule(
+            self.in_channels[feature_key],
+            self.channels,
+            3,
+            padding=1,
+            norm_cfg=self.norm_cfg,
+            act_cfg=self.act_cfg)
+
+        fuse_bottleneck = partial(DepthwiseSeparableConvModule,
+                                  kernel_size=5,
+                                  padding=2,
+                                  norm_cfg=self.norm_cfg,
+                                  act_cfg=self.act_cfg)
+
+        # Transform low-level feature
+        project = []
+        # Fuse
+        fuse = []
+        # Top-down direction, i.e. starting from largest stride
+        for i in range(self.decoder_stage):
+            project.append(
+                nn.Sequential(
+                    nn.Conv2d(low_level_channels[i], 
+                              low_level_channels_project[i], 
+                              1, bias=False),
+                    nn.BatchNorm2d(low_level_channels_project[i]),
+                    nn.ReLU(inplace=True)
+                )
+            )
+            if i == 0:
+                fuse_in_channels = self.channels + low_level_channels_project[i]
+            else:
+                fuse_in_channels =decoder_channels + low_level_channels_project[i]
+            fuse.append(
+                fuse_bottleneck(
+                    fuse_in_channels,
+                    decoder_channels,
+                )
+            )
+        self.project = nn.ModuleList(project)
+        self.fuse = nn.ModuleList(fuse)
+
+        self.conv_seg = nn.Conv2d(decoder_channels, self.num_classes, kernel_size=1)
+
+    def forward(self, inputs, prev_output):
+        """Forward function."""
+        feats = self.bottleneck(inputs[self.feature_key])
+        cur_prob = resize(
+                input=prev_output,
+                size=feats.shape[2:],
+                mode='bilinear',
+                align_corners=self.align_corners)
+
+        context = self.spatial_gather_module(feats, cur_prob)
+        output = self.object_context_block(feats, context)
+
+        # build decoder
+        for i in range(self.decoder_stage):
+            low_level_key = self.low_level_key[i]
+            low_level_feats = self.project[i](inputs[low_level_key])
+            output = resize(output,
+                       size=low_level_feats.shape[2:],
+                       mode='bilinear',
+                       align_corners=self.align_corners)
+            output = torch.cat([output, low_level_feats], dim=1)
+            output = self.fuse[i](output)
+
+            # apply the same coarse map in a coarse to fine manner.
+            # cur_prob = resize(
+            #         input=prev_output,
+            #         size=output.shape[2:],
+            #         mode='bilinear',
+            #         align_corners=self.align_corners)
+            # context = self.spatial_gather_module(output, cur_prob)
+            # output = self.object_context_block(output, context)
+
+        output = self.cls_seg(output)
         return output
