@@ -222,6 +222,8 @@ class OCRPlusHeadV2(BaseCascadeDecodeHead):
                 mode='bilinear',
                 align_corners=self.align_corners)
 
+        print("probability map shape within ocr modeule {}".format(cur_prob.shape))
+
         context = self.spatial_gather_module(feats, cur_prob)
         output = self.object_context_block(feats, context)
 
