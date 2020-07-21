@@ -22,8 +22,8 @@ class OCRPlusHead(BaseCascadeDecodeHead):
         from Res-2 stage following the DeepLabv3+
     -2- replace the 3x3 conv -> separable 3x3 conv that is used decrease
         the channel from 2048->512 (self.bottleneck)
-    # -3- replace the ObjectAttentionBlock ->
-    #     DepthwiseSeparableObjectAttentionBlock
+    -3- replace the ObjectAttentionBlock ->
+        DepthwiseSeparableObjectAttentionBlock
 
     Args:
         ocr_channels (int): The intermediate channels of OCR block.
@@ -32,13 +32,12 @@ class OCRPlusHead(BaseCascadeDecodeHead):
         c1_channels (int): The intermediate channels of c1 decoder.
         scale (int): The scale of probability map in SpatialGatherModule.
     """
-
     def __init__(self,
                  ocr_channels,
                  c1_in_channels,
                  c1_channels,
                  scale=1,
-                 use_sep_conv=False,
+                 use_sep_conv=True,
                  **kwargs):
         super(OCRPlusHead, self).__init__(**kwargs)
         assert c1_in_channels >= 0
@@ -214,16 +213,13 @@ class OCRPlusHeadV2(BaseCascadeDecodeHead):
         self.conv_seg = nn.Conv2d(decoder_channels, self.num_classes, kernel_size=1)
 
     def forward(self, inputs, prev_output):
-        """Forward function."""
         feats = self.bottleneck(inputs[self.feature_key])
+        """Forward function."""
         cur_prob = resize(
                 input=prev_output,
                 size=feats.shape[2:],
                 mode='bilinear',
                 align_corners=self.align_corners)
-
-        print("probability map shape within ocr modeule {}".format(cur_prob.shape))
-
         context = self.spatial_gather_module(feats, cur_prob)
         output = self.object_context_block(feats, context)
 
@@ -237,15 +233,6 @@ class OCRPlusHeadV2(BaseCascadeDecodeHead):
                        align_corners=self.align_corners)
             output = torch.cat([output, low_level_feats], dim=1)
             output = self.fuse[i](output)
-
-            # apply the same coarse map in a coarse to fine manner.
-            # cur_prob = resize(
-            #         input=prev_output,
-            #         size=output.shape[2:],
-            #         mode='bilinear',
-            #         align_corners=self.align_corners)
-            # context = self.spatial_gather_module(output, cur_prob)
-            # output = self.object_context_block(output, context)
 
         output = self.cls_seg(output)
         return output

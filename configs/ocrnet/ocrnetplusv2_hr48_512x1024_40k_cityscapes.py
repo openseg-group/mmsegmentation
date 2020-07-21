@@ -1,4 +1,9 @@
-_base_ = './ocrnet_hr18_512x1024_40k_cityscapes.py'
+_base_ = [
+    '../_base_/models/ocrnet_hr18.py', 
+    '../_base_/datasets/cityscapes.py',
+    '../_base_/default_runtime.py', 
+    '../_base_/schedules/schedule_40k.py'
+]
 norm_cfg = dict(type='SyncBN', requires_grad=True)
 model = dict(
     pretrained='open-mmlab://msra/hrnetv2_w48',
@@ -32,9 +37,9 @@ model = dict(
             low_level_key=(2, 1, 0),
             low_level_channels=(192, 96, 48),
             low_level_channels_project=(128, 64, 32),
-            decoder_channels=128,
-            channels=256,
-            ocr_channels=128,
+            decoder_channels=256,
+            channels=512,
+            ocr_channels=256,
             drop_out_ratio=0.1,
             num_classes=19,
             norm_cfg=norm_cfg,

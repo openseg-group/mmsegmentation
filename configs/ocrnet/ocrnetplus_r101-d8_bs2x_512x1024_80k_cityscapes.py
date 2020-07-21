@@ -2,7 +2,7 @@ _base_ = [
     '../_base_/models/ocrnetplus_r50-d8.py', 
     '../_base_/datasets/cityscapes_bs2x.py',
     '../_base_/default_runtime.py', 
-    '../_base_/schedules/schedule_40k_lr2x.py'
+    '../_base_/schedules/schedule_80k_lr2x.py'
 ]
 norm_cfg = dict(type='SyncBN', requires_grad=True)
 model = dict(
@@ -30,7 +30,7 @@ model = dict(
             ocr_channels=256,
             c1_in_channels=256,
             c1_channels=48,
-            use_sep_conv=True,
+            use_sep_conv=False,
             drop_out_ratio=0.1,
             num_classes=19,
             norm_cfg=norm_cfg,

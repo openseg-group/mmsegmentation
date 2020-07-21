@@ -2,7 +2,7 @@ _base_ = [
     '../_base_/models/ocrnet_hr18.py', 
     '../_base_/datasets/cityscapes_bs2x.py',
     '../_base_/default_runtime.py', 
-    '../_base_/schedules/schedule_40k_lr2x.py'
+    '../_base_/schedules/schedule_80k_lr2x.py'
 ]
 norm_cfg = dict(type='SyncBN', requires_grad=True)
 model = dict(
@@ -29,21 +29,16 @@ model = dict(
             loss_decode=dict(
                 type='CrossEntropyLoss', use_sigmoid=False, loss_weight=0.4)),
         dict(
-            type='OCRPlusHeadV2',
+            type='OCRHead',
             in_channels=[48, 96, 192, 384],
-            in_index=(0, 1, 2, 3),
-            input_transform='multiple_select',
-            feature_key=3,
-            low_level_key=(2, 1, 0),
-            low_level_channels=(192, 96, 48),
-            low_level_channels_project=(128, 64, 32),
-            decoder_channels=256,
             channels=512,
             ocr_channels=256,
+            input_transform='resize_concat',
+            in_index=(0, 1, 2, 3),
+            norm_cfg=norm_cfg,
             drop_out_ratio=0.1,
             num_classes=19,
-            norm_cfg=norm_cfg,
-            align_corners=False,
+            align_corners=True,
             loss_decode=dict(
                 type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0))
     ])

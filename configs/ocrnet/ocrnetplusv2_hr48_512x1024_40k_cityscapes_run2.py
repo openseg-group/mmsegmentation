@@ -1,8 +1,8 @@
 _base_ = [
     '../_base_/models/ocrnet_hr18.py', 
-    '../_base_/datasets/cityscapes_bs2x.py',
+    '../_base_/datasets/cityscapes.py',
     '../_base_/default_runtime.py', 
-    '../_base_/schedules/schedule_40k_lr2x.py'
+    '../_base_/schedules/schedule_40k.py'
 ]
 norm_cfg = dict(type='SyncBN', requires_grad=True)
 model = dict(
@@ -37,7 +37,7 @@ model = dict(
             low_level_key=(2, 1, 0),
             low_level_channels=(192, 96, 48),
             low_level_channels_project=(128, 64, 32),
-            decoder_channels=256,
+            decoder_channels=512,
             channels=512,
             ocr_channels=256,
             drop_out_ratio=0.1,
