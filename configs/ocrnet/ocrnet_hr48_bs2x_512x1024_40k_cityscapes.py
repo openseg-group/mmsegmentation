@@ -1,4 +1,9 @@
-_base_ = './ocrnet_hr18_bs2x_512x1024_40k_cityscapes.py'
+_base_ = [
+    '../_base_/models/ocrnet_hr18.py', 
+    '../_base_/datasets/cityscapes_bs2x.py',
+    '../_base_/default_runtime.py', 
+    '../_base_/schedules/schedule_40k_lr2x.py'
+]
 norm_cfg = dict(type='SyncBN', requires_grad=True)
 model = dict(
     pretrained='open-mmlab://msra/hrnetv2_w48',
@@ -18,7 +23,7 @@ model = dict(
             num_convs=1,
             norm_cfg=norm_cfg,
             concat_input=False,
-            drop_out_ratio=0.1,
+            drop_out_ratio=-1,
             num_classes=19,
             align_corners=True,
             loss_decode=dict(

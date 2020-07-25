@@ -39,8 +39,13 @@ class SpatialGatherModule(nn.Module):
 class ObjectAttentionBlock(_SelfAttentionBlock):
     """Make a OCR used SelfAttentionBlock."""
 
-    def __init__(self, in_channels, channels, scale, conv_cfg, norm_cfg,
-                 act_cfg, use_sep_conv=False):
+    def __init__(self, 
+                 in_channels,
+                 channels,
+                 scale,
+                 conv_cfg,
+                 norm_cfg,
+                 act_cfg):
         if scale > 1:
             query_downsample = nn.MaxPool2d(kernel_size=scale)
         else:
@@ -63,22 +68,20 @@ class ObjectAttentionBlock(_SelfAttentionBlock):
             norm_cfg=norm_cfg,
             act_cfg=act_cfg)
 
-        if use_sep_conv:
-            self.bottleneck = DepthwiseSeparableConvModule(
-                in_channels * 2,
-                in_channels,
-                3,
-                padding=1,
-                norm_cfg=norm_cfg,
-                act_cfg=act_cfg)
-        else:
-            self.bottleneck = ConvModule(
-                in_channels * 2,
-                in_channels,
-                1,
-                conv_cfg=conv_cfg,
-                norm_cfg=norm_cfg,
-                act_cfg=act_cfg)
+        self.in_channels = in_channels
+        self.channels = channels
+        self.scale = scale
+        self.conv_cfg = conv_cfg
+        self.norm_cfg = norm_cfg
+        self.act_cfg = act_cfg
+            
+        self.bottleneck = ConvModule(
+            in_channels * 2,
+            in_channels,
+            1,
+            conv_cfg=conv_cfg,
+            norm_cfg=norm_cfg,
+            act_cfg=act_cfg)
 
     def forward(self, query_feats, key_feats):
         """Forward function."""
@@ -104,38 +107,27 @@ class OCRHead(BaseCascadeDecodeHead):
             Default: 1.
     """
 
-    def __init__(self, ocr_channels, scale=1, use_sep_conv=False, **kwargs):
+    def __init__(self, ocr_channels, scale=1, **kwargs):
         super(OCRHead, self).__init__(**kwargs)
         self.ocr_channels = ocr_channels
         self.scale = scale
-        self.use_sep_conv = use_sep_conv
         self.object_context_block = ObjectAttentionBlock(
             self.channels,
             self.ocr_channels,
             self.scale,
             conv_cfg=self.conv_cfg,
             norm_cfg=self.norm_cfg,
-            act_cfg=self.act_cfg,
-            use_sep_conv=self.use_sep_conv)
+            act_cfg=self.act_cfg)
         self.spatial_gather_module = SpatialGatherModule(self.scale)
 
-        if self.use_sep_conv:
-            self.bottleneck = DepthwiseSeparableConvModule(
-                self.in_channels,
-                self.channels,
-                3,
-                padding=1,
-                norm_cfg=self.norm_cfg,
-                act_cfg=self.act_cfg)
-        else:
-            self.bottleneck = ConvModule(
-                self.in_channels,
-                self.channels,
-                3,
-                padding=1,
-                conv_cfg=self.conv_cfg,
-                norm_cfg=self.norm_cfg,
-                act_cfg=self.act_cfg)
+        self.bottleneck = ConvModule(
+            self.in_channels,
+            self.channels,
+            3,
+            padding=1,
+            conv_cfg=self.conv_cfg,
+            norm_cfg=self.norm_cfg,
+            act_cfg=self.act_cfg)
 
     def forward(self, inputs, prev_output):
         """Forward function."""
@@ -144,60 +136,5 @@ class OCRHead(BaseCascadeDecodeHead):
         context = self.spatial_gather_module(feats, prev_output)
         object_context = self.object_context_block(feats, context)
         output = self.cls_seg(object_context)
-        return output
 
-
-@HEADS.register_module()
-class OCRHeadV2(BaseCascadeDecodeHead):
-    """Object-Contextual Representations for Semantic Segmentation.
-
-    This head is the implementation of `OCRNet
-    <https://arxiv.org/abs/1909.11065>`_.
-
-    Args:
-        ocr_channels (int): The intermediate channels of OCR block.
-        scale (int): The scale of probability map in SpatialGatherModule in
-            Default: 1.
-    """
-
-    def __init__(self, ocr_channels, scale=1, use_sep_conv=True, **kwargs):
-        super(OCRHeadV2, self).__init__(**kwargs)
-        self.ocr_channels = ocr_channels
-        self.scale = scale
-        self.use_sep_conv = use_sep_conv
-        self.object_context_block = ObjectAttentionBlock(
-            self.channels,
-            self.ocr_channels,
-            self.scale,
-            conv_cfg=self.conv_cfg,
-            norm_cfg=self.norm_cfg,
-            act_cfg=self.act_cfg,
-            use_sep_conv=self.use_sep_conv)
-        self.spatial_gather_module = SpatialGatherModule(self.scale)
-
-        if self.use_sep_conv:
-            self.bottleneck = DepthwiseSeparableConvModule(
-                self.in_channels,
-                self.channels,
-                5,
-                padding=2,
-                norm_cfg=self.norm_cfg,
-                act_cfg=self.act_cfg)
-        else:
-            self.bottleneck = ConvModule(
-                self.in_channels,
-                self.channels,
-                3,
-                padding=1,
-                conv_cfg=self.conv_cfg,
-                norm_cfg=self.norm_cfg,
-                act_cfg=self.act_cfg)
-
-    def forward(self, inputs, prev_output):
-        """Forward function."""
-        x = self._transform_inputs(inputs)
-        feats = self.bottleneck(x)
-        context = self.spatial_gather_module(feats, prev_output)
-        object_context = self.object_context_block(feats, context)
-        output = self.cls_seg(object_context)
         return output

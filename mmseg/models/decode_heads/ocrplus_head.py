@@ -1,21 +1,34 @@
 import torch
 import torch.nn as nn
 from mmcv.cnn import ConvModule
-from functools import partial
 
 from mmseg.ops import DepthwiseSeparableConvModule, resize
 from ..builder import HEADS
-from ..utils import SelfAttentionBlock as _SelfAttentionBlock
 from .cascade_decode_head import BaseCascadeDecodeHead
-from .ocr_head import SpatialGatherModule, ObjectAttentionBlock
+from .ocr_head import ObjectAttentionBlock, SpatialGatherModule
+
+
+class DepthwiseSeparableObjectAttentionBlock(ObjectAttentionBlock):
+    """ObjectAttentionBlock Module with depthwise separable
+    conv."""
+
+    def __init__(self, *args, **kwargs):
+        super(DepthwiseSeparableObjectAttentionBlock, self).__init__(*args, **kwargs)
+        self.bottleneck = DepthwiseSeparableConvModule(
+            self.in_channels * 2,
+            self.in_channels,
+            3,
+            padding=1,
+            norm_cfg=self.norm_cfg,
+            act_cfg=self.act_cfg)
 
 
 @HEADS.register_module()
 class OCRPlusHead(BaseCascadeDecodeHead):
     """Object-Contextual Representations for Semantic Segmentation.
 
-    This head is augment the original `OCRNet
-    <https://arxiv.org/abs/1909.11065>` with a decoder head.
+    This head is a variant of the original `OCRNet
+    <https://arxiv.org/abs/1909.11065>` via adding a decoder head.
 
     We make 3 modifications based on the OCRHead:
     -1- apply a decoder head to combine the 2x-resolution feature maps
@@ -27,8 +40,8 @@ class OCRPlusHead(BaseCascadeDecodeHead):
 
     Args:
         ocr_channels (int): The intermediate channels of OCR block.
-        c1_in_channels (int): The input channels of c1 decoder.
-                              If is 0, the no decoder will be used.
+        c1_in_channels (int): The input channels of c1 decoder. If is 0,
+            the no decoder will be used.
         c1_channels (int): The intermediate channels of c1 decoder.
         scale (int): The scale of probability map in SpatialGatherModule.
     """
@@ -37,26 +50,22 @@ class OCRPlusHead(BaseCascadeDecodeHead):
                  c1_in_channels,
                  c1_channels,
                  scale=1,
-                 use_sep_conv=True,
                  **kwargs):
         super(OCRPlusHead, self).__init__(**kwargs)
         assert c1_in_channels >= 0
 
         self.ocr_channels = ocr_channels
         self.scale = scale
-        self.use_sep_conv = use_sep_conv
 
-        self.object_context_block = ObjectAttentionBlock(
+        self.object_context_block = DepthwiseSeparableObjectAttentionBlock(
             self.channels,
             self.ocr_channels,
             self.scale,
             conv_cfg=self.conv_cfg,
             norm_cfg=self.norm_cfg,
-            act_cfg=self.act_cfg,
-            use_sep_conv=self.use_sep_conv)
-
+            act_cfg=self.act_cfg)
         self.spatial_gather_module = SpatialGatherModule(self.scale)
-        
+
         self.bottleneck = DepthwiseSeparableConvModule(
             self.in_channels,
             self.channels,
@@ -143,13 +152,11 @@ class OCRPlusHeadV2(BaseCascadeDecodeHead):
                  low_level_channels_project,
                  decoder_channels,
                  scale=1,
-                 use_sep_conv=False,
                  **kargs):
         super(OCRPlusHeadV2, self).__init__(**kargs)
 
         self.ocr_channels = ocr_channels
         self.scale=scale
-        self.use_sep_conv = use_sep_conv
 
         self.feature_key = feature_key
         self.decoder_stage = len(low_level_channels)
@@ -157,14 +164,13 @@ class OCRPlusHeadV2(BaseCascadeDecodeHead):
         assert self.decoder_stage == len(low_level_channels_project)
         self.low_level_key = low_level_key
     
-        self.object_context_block = ObjectAttentionBlock(
+        self.object_context_block = DepthwiseSeparableObjectAttentionBlock(
             self.channels,
             self.ocr_channels,
             self.scale,
             conv_cfg=self.conv_cfg,
             norm_cfg=self.norm_cfg,
-            act_cfg=self.act_cfg,
-            use_sep_conv=self.use_sep_conv)
+            act_cfg=self.act_cfg)
 
         self.spatial_gather_module = SpatialGatherModule(self.scale)
 

@@ -1,8 +1,8 @@
 _base_ = [
     '../_base_/models/ocrnet_r50-d8.py', 
-    '../_base_/datasets/cityscapes.py',
+    '../_base_/datasets/cityscapes_bs2x.py',
     '../_base_/default_runtime.py', 
-    '../_base_/schedules/schedule_40k.py'
+    '../_base_/schedules/schedule_40k_lr2x.py'
 ]
 norm_cfg = dict(type='SyncBN', requires_grad=True)
 model = dict(
@@ -35,4 +35,5 @@ model = dict(
             align_corners=False,
             loss_decode=dict(
                 type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0))
-    ])
+    ]
+)

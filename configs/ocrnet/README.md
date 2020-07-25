@@ -66,8 +66,11 @@
 | OCRNetPlus (OCR & Decoder w/ SepDepthWiseConv)   | R-101-D8 | 512x1024  | 8 |   60000 |   -  |  -  |  80.15  |   -  |  
 | OCRNetPlus (OCR & Decoder w/ SepDepthWiseConv)   | R-101-D8 | 512x1024  | 16 |   40000 |   -  |  -  |  80.91,80.36,80.08  |   -  |
 | OCRNetPlus (OCR & Decoder w/ SepDepthWiseConv)   | R-101-D8 | 512x1024  | 8 |   60000 |   -  |  -  |  80.15  |   -  |     
-| OCRNetPlus (OCR & Decoder w/ SepDepthWiseConv)   | R-101-D8 | 512x1024  | 16 |   60000 |   -  |  -  |  80.82,81.03,80.82  |   -  | 
-
+| OCRNetPlus (OCR & Decoder w/ SepDepthWiseConv)   | R-101-D8 | 512x1024  | 16 |   60000 |   -  |  -  |  80.82,81.03,80.82  |   -  |
+| FCN | HRNetV2p-W48   | 512x1024  |  16  | 80000 | -        | -     | 81.40 | -  |
+| FCN+Decoder | HRNetV2p-W48   | 512x1024  |  16  | 80000 | -        | -     | 79.69 | -  |
+| OCRNet+   | R-101-D8 | 512x1024  | 16 |   40000 |   10.3  |  3  |  80.91,80.36,80.08  |   -  |    
+| OCRNet+   | R-101-D8 | 512x1024  | 16 |   80000 |   10.3  |  3  |  80.50  |   -  | 
 
 
 ### ADE20K
