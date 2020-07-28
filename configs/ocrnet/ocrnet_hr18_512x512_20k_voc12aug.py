@@ -14,7 +14,11 @@ model = dict(decode_head=[
         kernel_size=1,
         num_convs=1,
         concat_input=False,
+<<<<<<< HEAD
         drop_out_ratio=0.1,
+=======
+        dropout_ratio=-1,
+>>>>>>> upstream/master
         num_classes=21,
         norm_cfg=norm_cfg,
         align_corners=False,
@@ -27,7 +31,11 @@ model = dict(decode_head=[
         input_transform='resize_concat',
         channels=512,
         ocr_channels=256,
+<<<<<<< HEAD
         drop_out_ratio=0.1,
+=======
+        dropout_ratio=-1,
+>>>>>>> upstream/master
         num_classes=21,
         norm_cfg=norm_cfg,
         align_corners=False,

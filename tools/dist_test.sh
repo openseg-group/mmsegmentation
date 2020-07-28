@@ -11,8 +11,12 @@ PYTHON="/data/anaconda/envs/pytorch1.5.1/bin/python"
 CONFIG=$1
 CHECKPOINT=$2
 GPUS=$3
+<<<<<<< HEAD
 PORT=${PORT:-29300}
 # $CONFIG\/$GPUS/
+=======
+PORT=${PORT:-29500}
+>>>>>>> upstream/master
 PYTHONPATH="$(dirname $0)/..":$PYTHONPATH \
 ${PYTHON} -m torch.distributed.launch --nproc_per_node=$GPUS --master_port=$PORT \
     $(dirname "$0")/test.py $CONFIG $CHECKPOINT --launcher pytorch ${@:4}

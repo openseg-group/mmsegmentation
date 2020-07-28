@@ -1,6 +1,15 @@
 <div align="center">
   <img src="resources/mmseg-logo.png" width="600"/>
 </div>
+<br />
+
+[![PyPI](https://img.shields.io/pypi/v/mmsegmentation)](https://pypi.org/project/mmsegmentation)
+[![docs](https://img.shields.io/badge/docs-latest-blue)](https://mmsegmentation.readthedocs.io/en/latest/)
+[![badge](https://github.com/open-mmlab/mmsegmentation/workflows/build/badge.svg)](https://github.com/open-mmlab/mmsegmentation/actions)
+[![codecov](https://codecov.io/gh/open-mmlab/mmsegmentation/branch/master/graph/badge.svg)](https://codecov.io/gh/open-mmlab/mmsegmentation)
+[![license](https://img.shields.io/github/license/open-mmlab/mmsegmentation.svg)](https://github.com/open-mmlab/mmsegmentation/blob/master/LICENSE)
+
+Documentation: https://mmsegmentation.readthedocs.io/
 
 ## Introduction
 
@@ -33,6 +42,10 @@ The master branch works with **PyTorch 1.3 to 1.5**.
 
 This project is released under the [Apache 2.0 license](LICENSE).
 
+## Changelog
+
+v0.5.0 was released in 10/7/2020.
+
 ## Benchmark and model zoo
 
 Results and models are available in the [model zoo](docs/model_zoo.md).
@@ -50,11 +63,13 @@ Supported methods:
 - [x] [DeepLabV3+](configs/deeplabv3plus)
 - [x] [UPerNet](configs/upernet)
 - [x] [NonLocal Net](configs/nonlocal_net)
+- [x] [EncNet](configs/encnet)
 - [x] [CCNet](configs/ccnet)
 - [x] [DANet](configs/danet)
 - [x] [GCNet](configs/gcnet)
 - [x] [ANN](configs/ann)
 - [x] [OCRNet](configs/ocrnet)
+- [x] [Mixed Precision (FP16) Training](configs/fp16/README.md)
 
 ## Installation
 
@@ -64,6 +79,8 @@ Please refer to [INSTALL.md](docs/install.md) for installation and dataset prepa
 
 Please see [getting_started.md](docs/getting_started.md) for the basic usage of MMSegmentation.
 There are also tutorials for [adding new dataset](docs/tutorials/new_dataset.md), [designing data pipeline](docs/tutorials/data_pipeline.md), and [adding new modules](docs/tutorials/new_modules.md).
+
+A Colab tutorial is also provided. You may preview the notebook [here](demo/MMSegmentation_Tutorial.ipynb) or directly [run](https://colab.research.google.com/github/open-mmlab/mmsegmentation/blob/master/demo/MMSegmentation_Tutorial.ipynb) on Colab.
 
 ## Contributing
 
@@ -75,22 +92,3 @@ MMSegmentation is an open source project that welcome any contribution and feedb
 We wish that the toolbox and benchmark could serve the growing research
 community by providing a flexible as well as standardized toolkit to reimplement existing methods
 and develop their own new semantic segmentation methods.
-
-Many thanks to Ruobing Han ([@drcut](https://github.com/drcut)), Xiaoming Ma([@aishangmaxiaoming](https://github.com/aishangmaxiaoming)), Shiguang Wang ([@sunnyxiaohu](https://github.com/sunnyxiaohu)) for deployment support.
-
-## Citation
-
-If you use this toolbox or benchmark in your research, please cite this project.
-
-```
-@misc{mmseg2020,
-  author={Xu, Jiarui and Chen, Kai and Lin, Dahua},
-  title={{MMSegmenation}},
-  howpublished={\url{https://github.com/open-mmlab/mmsegmentation}},
-  year={2020}
-}
-```
-
-## Contact
-
-This repo is currently maintained by Jiarui Xu ([@xvjiarui](https://github.com/xvjiarui)), Kai Chen ([@hellock](http://github.com/hellock)).

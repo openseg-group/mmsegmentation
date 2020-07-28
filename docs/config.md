@@ -224,8 +224,8 @@ log_config = dict(  # config to register logger hook
 dist_params = dict(backend='nccl')  # Parameters to setup distributed training, the port can also be set.
 log_level = 'INFO'  # The level of logging.
 load_from = None  # load models as a pre-trained model from a given path. This will not resume training.
-resume_from = None  # Resume checkpoints from a given path, the training will be resumed from the epoch when the checkpoint's is saved.
-workflow = [('train', 1)]  # Workflow for runner. [('train', 1)] means there is only one workflow and the workflow named 'train' is executed once. The workflow trains the model by 12 epochs according to the total_epochs.
+resume_from = None  # Resume checkpoints from a given path, the training will be resumed from the iteration when the checkpoint's is saved.
+workflow = [('train', 1)]  # Workflow for runner. [('train', 1)] means there is only one workflow and the workflow named 'train' is executed once. The workflow trains the model by 40000 iterations according to the total_iters.
 cudnn_benchmark = True  # Whether use cudnn_benchmark to speed up, which is fast for fixed input size.
 optimizer = dict(  # Config used to build optimizer, support all the optimizers in PyTorch whose arguments are also the same as those in PyTorch
     type='SGD',  # Type of optimizers, refer to https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/optimizer/default_constructor.py#L13 for more details
@@ -363,3 +363,13 @@ data = dict(
     test=dict(pipeline=test_pipeline))
 ```
 We first define the new `train_pipeline`/`test_pipeline` and pass them into `data`.
+
+Similarly, if we would like to switch from `SyncBN` to `BN` or `MMSyncBN`, we need to substitute every `norm_cfg` in the config.
+```python
+_base_ = '../pspnet/psp_r50_512x1024_40ki_cityscpaes.py'
+norm_cfg = dict(type='BN', requires_grad=True)
+model = dict(
+    backbone=dict(norm_cfg=norm_cfg),
+    decode_head=dict(norm_cfg=norm_cfg),
+    auxiliary_head=dict(norm_cfg=norm_cfg))
+```

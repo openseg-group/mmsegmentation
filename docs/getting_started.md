@@ -45,7 +45,7 @@ mmsegmentation
 The data could be found [here](https://www.cityscapes-dataset.com/downloads/) after registration.
 
 By convention, `**labelTrainIds.png` are used for cityscapes training.
-We provided a [scripts](../tools/convert_datasets/cityscapes.py) based on [cityscapesscripts](https://github.com/mcordts/cityscapesScripts)
+We provided a [scripts](https://github.com/open-mmlab/mmsegmentation/blob/master/tools/convert_datasets/cityscapes.py) based on [cityscapesscripts](https://github.com/mcordts/cityscapesScripts)
 to generate `**labelTrainIds.png`.
 ```shell
 # --nproc means 8 process for conversion, which could be omitted as well.
@@ -62,7 +62,7 @@ If you would like to use augmented VOC dataset, please run following command to 
 python tools/convert_datasets/voc_aug.py data/VOCdevkit data/VOCdevkit/VOCaug --nproc 8
 ```
 
-Please refer to [concat dataset](tutorials/new_dataset.md#concatenate-dataset) for details about how to concatenate them and train them together.
+Please refer to [concat dataset](https://github.com/open-mmlab/mmsegmentation/blob/master/docs/tutorials/new_dataset.md#concatenate-dataset) for details about how to concatenate them and train them together.
 
 
 ### ADE20K
@@ -125,23 +125,36 @@ Assume that you have already downloaded the checkpoints to the directory `checkp
         --eval mAP
     ```
 
-4. Test PSPNet with 8 GPUs, and evaluate the standard mIoU and cityscapes metric.
+4. Test PSPNet with 4 GPUs, and evaluate the standard mIoU and cityscapes metric.
 
     ```shell
     ./tools/dist_test.sh configs/pspnet/pspnet_r50-d8_512x1024_40k_cityscapes.py \
         checkpoints/pspnet_r50-d8_512x1024_40k_cityscapes_20200605_003338-2966598c.pth \
-        8 --out results.pkl --eval mIoU cityscapes
+        4 --out results.pkl --eval mIoU cityscapes
     ```
+   Note: There is some gap (~0.1%) between cityscapes mIoU and our mIoU. The reason is that cityscapes average each class with class size by default.
+   We use the simple version without average for all datasets.
 
-5. Test PSPNet on cityscapes test split with 8 GPUs, and generate the png files to be submit to the official evaluation server.
+5. Test PSPNet on cityscapes test split with 4 GPUs, and generate the png files to be submit to the official evaluation server.
+
+    First, add following to config file `configs/pspnet/pspnet_r50-d8_512x1024_40k_cityscapes.py`,
+
+    ```python
+    data = dict(
+        test=dict(
+            img_dir='leftImg8bit/test',
+            ann_dir='gtFine/test'))
+    ```
+   Then run test.
 
     ```shell
     ./tools/dist_test.sh configs/pspnet/pspnet_r50-d8_512x1024_40k_cityscapes.py \
         checkpoints/pspnet_r50-d8_512x1024_40k_cityscapes_20200605_003338-2966598c.pth \
-        8 --format-only --options "imgfile_prefix=./pspnet_test_results"
+        4 --format-only --options "imgfile_prefix=./pspnet_test_results"
     ```
 
-You will get png files under `./pspnet_test_results` directory.
+    You will get png files under `./pspnet_test_results` directory.
+    You may run `zip -r results.zip pspnet_test_results/` and submit the zip file to [evaluation server](https://www.cityscapes-dataset.com/submit/).
 
 
 ### Image demo
@@ -205,8 +218,10 @@ By default we evaluate the model on the validation set after some iterations, yo
 evaluation = dict(interval=4000)  # This evaluate the model per 4000 iterations.
 ```
 
-**\*Important\***: The default learning rate in config files is for 8 GPUs and 1 img/gpu (batch size = 8x1 = 8).
-Equivalently, you may also use 4 GPUs and 2 imgs/gpu since all models using cross-GPU SyncBN.
+**\*Important\***: The default learning rate in config files is for 4 GPUs and 2 img/gpu (batch size = 4x2 = 8).
+Equivalently, you may also use 8 GPUs and 1 imgs/gpu since all models using cross-GPU SyncBN.
+
+To trade speed with GPU memory, you may pass in `--options model.backbone.with_cp=True` to enable checkpoint in backbone.
 
 ### Train with a single GPU
 
@@ -311,7 +326,6 @@ Params: 48.98 M
 
 (1) FLOPs are related to the input shape while parameters are not. The default input shape is (1, 3, 1280, 800).
 (2) Some operators are not counted into FLOPs like GN and custom operators.
-You can add support for new operators by modifying [`mmseg/utils/flops_counter.py`](../mmseg/utils/flops_counter.py).
 
 ### Publish a model
 
