@@ -18,11 +18,7 @@ model = dict(
             num_convs=1,
             norm_cfg=norm_cfg,
             concat_input=False,
-<<<<<<< HEAD
-            drop_out_ratio=0.1,
-=======
             dropout_ratio=-1,
->>>>>>> upstream/master
             num_classes=21,
             align_corners=False,
             loss_decode=dict(
@@ -35,11 +31,7 @@ model = dict(
             input_transform='resize_concat',
             in_index=(0, 1, 2, 3),
             norm_cfg=norm_cfg,
-<<<<<<< HEAD
-            drop_out_ratio=0.1,
-=======
             dropout_ratio=-1,
->>>>>>> upstream/master
             num_classes=21,
             align_corners=False,
             loss_decode=dict(

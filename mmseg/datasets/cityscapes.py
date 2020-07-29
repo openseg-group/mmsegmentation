@@ -42,7 +42,6 @@ class CityscapesDataset(CustomDataset):
         result_copy = result.copy()
         for trainId, label in CSLabels.trainId2label.items():
             result_copy[result == trainId] = label.id
-
         return result_copy
 
     def results2img(self, results, imgfile_prefix, to_label_id):

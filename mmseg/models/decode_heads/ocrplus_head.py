@@ -69,26 +69,34 @@ class OCRPlusHead(BaseCascadeDecodeHead):
         self.bottleneck = DepthwiseSeparableConvModule(
             self.in_channels,
             self.channels,
-            3,
-            padding=1,
+            5,
+            padding=2,
             norm_cfg=self.norm_cfg,
             act_cfg=self.act_cfg)
 
-        self.fuse_bottleneck = nn.Sequential(
-            DepthwiseSeparableConvModule(
-                self.channels + c1_channels,
-                self.channels,
-                3,
-                padding=1,
-                norm_cfg=self.norm_cfg,
-                act_cfg=self.act_cfg),
-            DepthwiseSeparableConvModule(
-                self.channels,
-                self.channels,
-                3,
-                padding=1,
-                norm_cfg=self.norm_cfg,
-                act_cfg=self.act_cfg))
+        # self.fuse_bottleneck = nn.Sequential(
+        #     DepthwiseSeparableConvModule(
+        #         self.channels + c1_channels,
+        #         self.channels,
+        #         3,
+        #         padding=1,
+        #         norm_cfg=self.norm_cfg,
+        #         act_cfg=self.act_cfg),
+        #     DepthwiseSeparableConvModule(
+        #         self.channels,
+        #         self.channels,
+        #         3,
+        #         padding=1,
+        #         norm_cfg=self.norm_cfg,
+        #         act_cfg=self.act_cfg))
+
+        self.fuse_bottleneck = DepthwiseSeparableConvModule(
+            self.channels + c1_channels,
+            self.channels,
+            5,
+            padding=2,
+            norm_cfg=self.norm_cfg,
+            act_cfg=self.act_cfg)
 
         if c1_in_channels > 0:
             self.c1_bottleneck = ConvModule(
