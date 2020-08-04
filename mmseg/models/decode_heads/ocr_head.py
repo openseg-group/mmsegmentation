@@ -138,3 +138,4 @@ class OCRHead(BaseCascadeDecodeHead):
         output = self.cls_seg(object_context)
 
         return output
+

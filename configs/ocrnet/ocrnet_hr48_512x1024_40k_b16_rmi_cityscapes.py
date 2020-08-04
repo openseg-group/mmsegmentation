@@ -40,7 +40,7 @@ model = dict(
             norm_cfg=norm_cfg,
             align_corners=True,
             loss_decode=dict(
-                type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0)),
+                type='RMILoss', num_classes=19, loss_weight=1.0))
     ]
 )
 optimizer = dict(lr=0.02)
