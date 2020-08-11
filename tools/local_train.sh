@@ -2,6 +2,7 @@
 
 PYTHON="/data/anaconda/envs/pytorch1.5.1/bin/python"
 
+$PYTHON -m pip uninstall mmcv -y
 $PYTHON -m pip install mmcv
 
 CONFIG=$1

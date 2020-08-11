@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+nvidia-smi
 
 PYTHON="/opt/conda/bin/python"
 

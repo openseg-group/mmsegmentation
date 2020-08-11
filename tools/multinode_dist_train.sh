@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+sudo apt-get update
+sudo apt-get install jq -y
+
 all_containers=`cat $PHILLY_RUNTIME_CONFIG | jq ".containers[].id"`
 for container in $all_containers
 do
@@ -20,7 +23,7 @@ this_container_index=$PHILLY_CONTAINER_INDEX
 
 export NODE_RANK=$this_container_index
 export MASTER_IP=$master_ip
-#export MASTER_PORT=$(($(($RANDOM%$DIFF))+master_port_start))
+# export MASTER_PORT=$(($(($RANDOM%$DIFF))+master_port_start))
 export MASTER_PORT=$((master_port_start+1))
 echo '*************'
 echo $MASTER_IP
@@ -34,12 +37,18 @@ PORT=${PORT:-29500}
 NNODES=2
 
 PYTHONPATH="$(dirname $0)/..":$PYTHONPATH \
-python -m torch.distributed.launch \
+
+PYTHON="/opt/conda/bin/python"
+
+$PYTHON -m pip install mmcv
+$PYTHON -m pip install -e .
+
+${PYTHON} -m torch.distributed.launch \
     --nproc_per_node=$GPUS \
     --nnodes=$NNODES \
     --node_rank=$NODE_RANK \
     --master_addr=$MASTER_IP \
     --master_port=$MASTER_PORT \
     $(dirname "$0")/train.py $CONFIG \
-    --launcher pytorch ${@:3} \
+    --launcher pytorch \
     --seed 0 --work_dir "$(dirname $0)/../../mmsegmentation-logs"
