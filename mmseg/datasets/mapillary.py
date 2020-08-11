@@ -9,6 +9,12 @@ class MapillaryDataset(CustomDataset):
     In segmentation map annotation for Mapillary, which contains 65 categories.
     The ``img_suffix`` is fixed to '.jpg' and ``seg_map_suffix`` is fixed to
     '.png'.
+
+    Currently, we include the "unlabeled" category, which is ignored in our previous
+    experimental settings.
+    Notably, the recent Panoptic-DeepLab trains the models with 65 categories while
+    the recent Multi-Scale Attention trains the model with 66 categories. We use 66
+    categories for simplicity.
     """
 
     CLASSES = (
@@ -51,6 +57,8 @@ class MapillaryDataset(CustomDataset):
 if __name__ == '__main__':
     CLASSES = []
     PALETTE = []
+
+    print(len(CLASSES))
 
     # import json
     # import pdb

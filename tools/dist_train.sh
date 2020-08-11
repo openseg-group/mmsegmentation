@@ -11,4 +11,4 @@ PORT=${PORT:-29500}
 
 PYTHONPATH="$(dirname $0)/..":$PYTHONPATH \
 ${PYTHON} -m torch.distributed.launch --nproc_per_node=$GPUS --master_port=$PORT \
-    $(dirname "$0")/train.py $CONFIG --launcher pytorch --seed 0
+    $(dirname "$0")/train.py $CONFIG --launcher pytorch --seed 0 --work_dir "$(dirname $0)/../../mmsegmentation-logs"
