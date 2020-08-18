@@ -34,7 +34,7 @@ echo '*************'
 CONFIG=$1
 GPUS=$2
 PORT=${PORT:-29500}
-NNODES=2
+NNODES=$3
 
 PYTHONPATH="$(dirname $0)/..":$PYTHONPATH \
 

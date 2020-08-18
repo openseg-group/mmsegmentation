@@ -6,6 +6,7 @@ from .enc_head import EncHead
 from .fcn_head import FCNHead
 from .fpn_decode_head import FpnDecodeHead
 from .gc_head import GCHead
+from .isa_head import ISAHead
 from .nl_head import NLHead
 from .ocr_head import OCRHead
 from .ocrplus_head import OCRPlusHead, OCRPlusHeadV2
@@ -17,5 +18,5 @@ from .uper_head import UPerHead
 __all__ = [
     'FCNHead', 'PSPHead', 'ASPPHead', 'PSAHead', 'NLHead', 'GCHead', 'CCHead',
     'UPerHead', 'DepthwiseSeparableASPPHead', 'ANNHead', 'DAHead', 'OCRHead',
-    'EncHead', 'OCRPlusHead', 'OCRPlusHeadV2', 'FpnDecodeHead'
+    'EncHead', 'OCRPlusHead', 'OCRPlusHeadV2', 'FpnDecodeHead', 'ISAHead',
 ]

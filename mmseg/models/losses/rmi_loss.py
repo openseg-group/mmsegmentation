@@ -10,6 +10,7 @@ from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
 
+import pdb
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -18,13 +19,14 @@ from ..builder import LOSSES
 
 __all__ = ['RMILoss']
 
+TORCH_VERSION = torch.__version__[:3]
 
 _euler_num = 2.718281828				# 	euler number
 _pi = 3.14159265						# 	pi
 _ln_2_pi = 1.837877						# 	ln(2 * pi)
 _CLIP_MIN = 1e-6            			# 	min clip value after softmax or sigmoid operations
 _CLIP_MAX = 1.0    						# 	max clip value after softmax or sigmoid operations
-_POS_ALPHA = 5e-4						# 	add this factor to ensure the AA^T is positive definite
+_POS_ALPHA = 1e-3						# 	add this factor to ensure the AA^T is positive definite
 _IS_SUM = 1								# 	sum the loss per channel
 
 def map_get_pairs(labels_4D, probs_4D, radius=3, is_combine=True):

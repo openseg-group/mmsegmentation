@@ -45,6 +45,6 @@ model = dict(
 )
 optimizer = dict(lr=0.01)
 lr_config = dict(min_lr=1e-4)
-data = dict(samples_per_gpu=2, workers_per_gpu=2)
+data = dict(samples_per_gpu=4, workers_per_gpu=4)
 # fp16 settings
 optimizer_config = dict(type='Fp16OptimizerHook', loss_scale=512.)
