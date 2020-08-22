@@ -2,12 +2,10 @@ _base_ = [
     '../_base_/models/ocrnet_hr18.py',
     '../_base_/datasets/cityscapes.py',
     '../_base_/default_runtime.py', 
-    '../_base_/schedules/schedule_40k.py'
+    '../_base_/schedules/schedule_80k.py'
 ]
-# load_from="../../../mmsegmentation-logs/ocrnet_hr48_1024x1024_640k_b8_rmi_mapillary/iter_640000.pth"
 norm_cfg = dict(type='SyncBN', requires_grad=True)
 model = dict(
-    pretrained='open-mmlab://msra/hrnetv2_w48',
     backbone=dict(
         extra=dict(
             stage2=dict(num_channels=(48, 96)),

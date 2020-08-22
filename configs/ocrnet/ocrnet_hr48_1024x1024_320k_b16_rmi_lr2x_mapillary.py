@@ -1,10 +1,9 @@
 _base_ = [
     '../_base_/models/ocrnet_hr18.py',
-    '../_base_/datasets/cityscapes.py',
-    '../_base_/default_runtime.py', 
-    '../_base_/schedules/schedule_40k.py'
+    '../_base_/datasets/mapillary_1024x1024.py',
+    '../_base_/default_runtime.py',
+    '../_base_/schedules/schedule_320k.py'
 ]
-# load_from="../../../mmsegmentation-logs/ocrnet_hr48_1024x1024_640k_b8_rmi_mapillary/iter_640000.pth"
 norm_cfg = dict(type='SyncBN', requires_grad=True)
 model = dict(
     pretrained='open-mmlab://msra/hrnetv2_w48',
@@ -24,7 +23,7 @@ model = dict(
             num_convs=1,
             concat_input=False,
             dropout_ratio=-1,
-            num_classes=19,
+            num_classes=66,
             norm_cfg=norm_cfg,
             align_corners=True,
             loss_decode=dict(
@@ -37,13 +36,15 @@ model = dict(
             channels=512,
             ocr_channels=256,
             dropout_ratio=0.1,
-            num_classes=19,
+            num_classes=66,
             norm_cfg=norm_cfg,
             align_corners=True,
             loss_decode=dict(
-                type='RMILoss', num_classes=19, loss_weight=1.0))
+                type='RMILoss', num_classes=66, loss_weight=1.0)),
     ]
 )
 optimizer = dict(lr=0.02)
-lr_config = dict(min_lr=2e-4)
+lr_config = dict(min_lr=1e-4)
 data = dict(samples_per_gpu=2, workers_per_gpu=2)
+# fp16 settings
+optimizer_config = dict(type='Fp16OptimizerHook', loss_scale=512.)

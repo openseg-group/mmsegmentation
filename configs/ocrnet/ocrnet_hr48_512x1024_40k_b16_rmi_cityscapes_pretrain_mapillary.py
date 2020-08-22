@@ -4,10 +4,10 @@ _base_ = [
     '../_base_/default_runtime.py', 
     '../_base_/schedules/schedule_40k.py'
 ]
-# load_from="../../../mmsegmentation-logs/ocrnet_hr48_1024x1024_640k_b8_rmi_mapillary/iter_640000.pth"
+# load_from="/home/yuhui/teamdrive/yuyua/code/segmentation/mmsegmentation-logs/ocrnet_hr48_1024x1024_640k_b8_rmi_mapillary/iter_640000.pth"
+# load_from='hrnet_ocr_mapillary_524.pth'
 norm_cfg = dict(type='SyncBN', requires_grad=True)
 model = dict(
-    pretrained='open-mmlab://msra/hrnetv2_w48',
     backbone=dict(
         extra=dict(
             stage2=dict(num_channels=(48, 96)),
