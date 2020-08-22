@@ -19,9 +19,11 @@
 | ISANet | R-101-D8 | 512x1024  |  8 |  40000 |       |       |  79.56  |      |      |
 | ISANet | R-101-D8 | 512x1024  |  4 |  80000 |       |       |  79.67  |      |      |
 | ISANet | R-101-D8 | 512x1024  |  8 |  80000 |       |       |  80.18  |      |      |
-| OCRNet | R-101-D8 | 512x1024  | 8 |  40000 |  -   |   -  |   79.88,80.09  |  -  | 
+| NonLocal | R-101-D8 | 512x1024  | 4 |  40000 |     10.9 |           1.95 | 78.66 |
+| NonLocal | R-101-D8 | 512x1024  | 4 |  80000 | -        | -              | 78.93 | 
+<!-- | OCRNet | R-101-D8 | 512x1024  | 8 |  40000 |  -   |   -  |   79.88,80.09  |  -  | 
 | OCRNet | R-101-D8 | 512x1024  | 16 |   40000 |  8.8   |   3.02  |   80.29,80.30,80.65  |  -  | 
-| OCRNet | R-101-D8 | 512x1024 | 16 |   80000 |  8.8  |   3.02  |   80.40,80.54,80.81  |  -  | 
+| OCRNet | R-101-D8 | 512x1024 | 16 |   80000 |  8.8  |   3.02  |   80.40,80.54,80.81  |  -  |  -->
 
 ### ADE20K
 | Method | Backbone | Crop Size | Lr schd | Mem (GB) | Inf time (fps) | mIoU  | mIoU(ms+flip) |                                                                                                                                                                                         download                                                                                                                                                                                         |
@@ -30,6 +32,7 @@
 | ISANet | R-101-D8 | 512x512   |   80000 |       |       |      |          |      |
 | ISANet | R-50-D8  | 512x512   |  160000 |       |       |      |          |      |
 | ISANet | R-101-D8 | 512x512   |  160000 |       |       | 43.77|         |      |
+| NonLocal | R-101-D8 | 512x512   |  160000 | -        | -              | 43.36 |      |      |
 
 ### Pascal VOC 2012 + Aug
 | Method | Backbone | Crop Size | Lr schd | Mem (GB) | Inf time (fps) | mIoU  | mIoU(ms+flip) |                                                                                                                                                                                           download                                                                                                                                                                                           |
