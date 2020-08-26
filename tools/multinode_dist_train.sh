@@ -40,7 +40,7 @@ PYTHONPATH="$(dirname $0)/..":$PYTHONPATH \
 
 PYTHON="/opt/conda/bin/python"
 
-$PYTHON -m pip install mmcv
+$PYTHON -m pip install mmcv==1.0.5
 $PYTHON -m pip install -e .
 
 ${PYTHON} -m torch.distributed.launch \
@@ -51,4 +51,5 @@ ${PYTHON} -m torch.distributed.launch \
     --master_port=$MASTER_PORT \
     $(dirname "$0")/train.py $CONFIG \
     --launcher pytorch \
-    --seed 0 --work_dir "$(dirname $0)/../../mmsegmentation-logs"
+    --seed 0 --work_dir "$(dirname $0)/../../mmsegmentation-logs" \
+    ${@:4}

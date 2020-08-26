@@ -15,9 +15,11 @@ from .psp_head import PSPHead
 from .sep_aspp_head import DepthwiseSeparableASPPHead
 from .uper_head import UPerHead
 from .df_head import DFHead
+from .ga_head import GAHead
 
 __all__ = [
     'FCNHead', 'PSPHead', 'ASPPHead', 'PSAHead', 'NLHead', 'GCHead', 'CCHead',
     'UPerHead', 'DepthwiseSeparableASPPHead', 'ANNHead', 'DAHead', 'OCRHead',
-    'EncHead', 'OCRPlusHead', 'OCRPlusHeadV2', 'FpnDecodeHead', 'ISAHead', 'DFHead'
+    'EncHead', 'OCRPlusHead', 'OCRPlusHeadV2', 'FpnDecodeHead', 'ISAHead',
+    'DFHead', 'GAHead'
 ]

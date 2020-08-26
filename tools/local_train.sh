@@ -22,3 +22,5 @@ ${PYTHON} -m torch.distributed.launch --nproc_per_node=$GPUS --master_port=$PORT
 # ./tools/local_train.sh configs/ocrnet/ocrnet_hr48_1024x1024_320k_b8_rmi_mapillary.py 4
 # ./tools/local_train.sh configs/ocrnet/ocrnet_hr48_1024x1024_320k_b8_rmi_mapillary.py 4
 # ./tools/local_train.sh configs/ocrnet/ocrnet_hr48_512x1024_40k_b16_rmi_cityscapes_pretrain_mapillary.py 4 --load-from=pretrained_models/hrnet_ocr_mapillary_524.pth
+
+# ./tools/local_train.sh configs/ganet/ganet_r50_d8_512x1024_40k_cityscapes.py 4
