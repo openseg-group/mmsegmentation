@@ -5,9 +5,10 @@ from .custom import CustomDataset
 from .dataset_wrappers import ConcatDataset, RepeatDataset
 from .voc import PascalVOCDataset
 from .mapillary import MapillaryDataset
+from .celeba import CelebAMaskHQDataset
 
 __all__ = [
     'CustomDataset', 'build_dataloader', 'ConcatDataset', 'RepeatDataset',
     'DATASETS', 'build_dataset', 'PIPELINES', 'CityscapesDataset',
-    'PascalVOCDataset', 'ADE20KDataset', 'MapillaryDataset'
+    'PascalVOCDataset', 'ADE20KDataset', 'MapillaryDataset', 'CelebAMaskHQDataset'
 ]

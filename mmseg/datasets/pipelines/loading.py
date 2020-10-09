@@ -128,10 +128,19 @@ class LoadAnnotations(object):
                                 results['ann_info']['seg_map'])
         else:
             filename = results['ann_info']['seg_map']
-        img_bytes = self.file_client.get(filename)
-        gt_semantic_seg = mmcv.imfrombytes(
-            img_bytes, flag='unchanged',
-            backend=self.imdecode_backend).squeeze().astype(np.uint8)
+
+        if results['ann_info']['false_label'] == True:
+            img_bytes = self.file_client.get(filename)
+            img = mmcv.imfrombytes(
+                img_bytes, flag='color', backend='cv2')
+            # set the label as ignore index
+            gt_semantic_seg = (img[0, ...] * 0.0 + 255).astype(np.uint8)
+            pdb.set_trace()
+        else:
+            img_bytes = self.file_client.get(filename)
+            gt_semantic_seg = mmcv.imfrombytes(
+                img_bytes, flag='unchanged',
+                backend=self.imdecode_backend).squeeze().astype(np.uint8)
         # reduce zero_label
         if self.reduce_zero_label:
             # avoid using underflow conversion
