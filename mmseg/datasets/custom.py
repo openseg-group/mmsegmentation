@@ -130,9 +130,7 @@ class CustomDataset(Dataset):
                     img_info = dict(filename=img_file)
                     if ann_dir is not None:
                         seg_map = osp.join(ann_dir, img_name + seg_map_suffix)
-                        img_info['ann'] = dict(seg_map=seg_map, false_label=False)
-                    else:
-                        img_info['ann'] = dict(seg_map=img_file, false_label=True)
+                        img_info['ann'] = dict(seg_map=seg_map, exist_label=osp.exists(seg_map))
                     img_infos.append(img_info)
         else:
             for img in mmcv.scandir(img_dir, img_suffix, recursive=True):
@@ -141,9 +139,7 @@ class CustomDataset(Dataset):
                 if ann_dir is not None:
                     seg_map = osp.join(ann_dir,
                                        img.replace(img_suffix, seg_map_suffix))
-                    img_info['ann'] = dict(seg_map=seg_map, false_label=False)
-                else:
-                    img_info['ann'] = dict(seg_map=img_file, false_label=True)
+                    img_info['ann'] = dict(seg_map=seg_map, exist_label=osp.exists(seg_map))
                 img_infos.append(img_info)
 
         print_log(f'Loaded {len(img_infos)} images', logger=get_root_logger())

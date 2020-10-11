@@ -3,6 +3,9 @@ import os.path as osp
 import mmcv
 import numpy as np
 
+from mmcv.utils import print_log
+from mmseg.utils import get_root_logger
+
 from ..builder import PIPELINES
 
 
@@ -129,18 +132,26 @@ class LoadAnnotations(object):
         else:
             filename = results['ann_info']['seg_map']
 
-        if results['ann_info']['false_label'] == True:
+        if results['ann_info']['exist_label'] == False:
+            # read the images and set the label map as the same size as the image
+            if results.get('img_prefix') is not None:
+                filename = osp.join(results['img_prefix'],
+                                    results['img_info']['filename'])
+            else:
+                filename = results['img_info']['filename']
             img_bytes = self.file_client.get(filename)
             img = mmcv.imfrombytes(
                 img_bytes, flag='color', backend='cv2')
-            # set the label as ignore index
-            gt_semantic_seg = (img[0, ...] * 0.0 + 255).astype(np.uint8)
-            pdb.set_trace()
+            # set the label values as ignore index
+            gt_semantic_seg = (img[:, :, 1] * 0.0 + 255).astype(np.uint8)
         else:
             img_bytes = self.file_client.get(filename)
             gt_semantic_seg = mmcv.imfrombytes(
                 img_bytes, flag='unchanged',
                 backend=self.imdecode_backend).squeeze().astype(np.uint8)
+            if 'leftImg8bit' in filename:
+                # convert the cityscapes labels
+                gt_semantic_seg = self._convert_cityscapes_label(gt_semantic_seg)
         # reduce zero_label
         if self.reduce_zero_label:
             # avoid using underflow conversion
@@ -156,3 +167,12 @@ class LoadAnnotations(object):
         repr_str += f'(reduce_zero_label={self.reduce_zero_label},'
         repr_str += f"imdecode_backend='{self.imdecode_backend}')"
         return repr_str
+
+    @staticmethod
+    def _convert_cityscapes_label(result):
+        """Convert trainId to id for cityscapes."""
+        import cityscapesscripts.helpers.labels as CSLabels
+        result_copy = result.copy()
+        for trainId, label in CSLabels.trainId2label.items():
+            result_copy[result == label.id] = trainId
+        return result_copy
