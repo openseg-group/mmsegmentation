@@ -3,7 +3,8 @@ import torch.nn as nn
 from mmcv.cnn import ConvModule
 from functools import partial
 
-from mmseg.ops import DepthwiseSeparableConvModule, resize
+from mmseg.ops import resize
+from mmcv.cnn import DepthwiseSeparableConvModule
 from ..builder import HEADS
 from .decode_head import BaseDecodeHead
 

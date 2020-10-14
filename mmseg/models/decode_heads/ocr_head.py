@@ -3,7 +3,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from mmcv.cnn import ConvModule
 
-from mmseg.ops import DepthwiseSeparableConvModule, resize
+from mmseg.ops import resize
+from mmcv.cnn import DepthwiseSeparableConvModule
 from ..builder import HEADS
 from ..utils import SelfAttentionBlock as _SelfAttentionBlock
 from .cascade_decode_head import BaseCascadeDecodeHead

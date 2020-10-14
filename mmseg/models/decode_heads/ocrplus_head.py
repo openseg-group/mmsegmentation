@@ -2,7 +2,8 @@ import torch
 import torch.nn as nn
 from mmcv.cnn import ConvModule
 
-from mmseg.ops import DepthwiseSeparableConvModule, resize
+from mmseg.ops import resize
+from mmcv.cnn import DepthwiseSeparableConvModule
 from ..builder import HEADS
 from .cascade_decode_head import BaseCascadeDecodeHead
 from .ocr_head import ObjectAttentionBlock, SpatialGatherModule

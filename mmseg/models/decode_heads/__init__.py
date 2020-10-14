@@ -26,6 +26,6 @@ __all__ = [
     'FCNHead', 'PSPHead', 'ASPPHead', 'PSAHead', 'NLHead', 'GCHead', 'CCHead',
     'UPerHead', 'DepthwiseSeparableASPPHead', 'ANNHead', 'DAHead', 'OCRHead',
     'EncHead', 'DepthwiseSeparableFCNHead', 'FPNHead', 'EMAHead', 'DNLHead',
-    'PointHead''OCRPlusHead', 'OCRPlusHeadV2', 'FpnDecodeHead', 'ISAHead',
+    'PointHead', 'OCRPlusHead', 'OCRPlusHeadV2', 'FpnDecodeHead', 'ISAHead',
     'DFHead', 'GAHead'
 ]

@@ -1,6 +1,6 @@
 import torch
 from mmcv.cnn import ConvModule, constant_init
-from mmseg.ops import DepthwiseSeparableConvModule
+from mmcv.cnn import DepthwiseSeparableConvModule
 from torch import nn as nn
 from torch.nn import functional as F
 
