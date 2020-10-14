@@ -218,10 +218,11 @@ class ParallelEncoderDecoder(BaseSegmentor):
             losses.update(loss_aux_l)
             losses.update(loss_aux_r)
 
-        #TODO add the mse loss between the parallized predictions...
+        #TODO add the weights for consistency loss
         pred_l = F.softmax(self.decode_head_l.forward(x_l), 1)
         pred_r = F.softmax(self.decode_head_r.forward(x_r), 1)
-        losses['consistency_loss'] = F.mse_loss(pred_l, pred_r.detach()) + F.mse_loss(pred_r, pred_l.detach())
+        losses['consistency_loss'] = self.train_cfg.consistency_loss_weight * \
+            (F.mse_loss(pred_l, pred_r.detach()) + F.mse_loss(pred_r, pred_l.detach()))
 
         return losses
 
