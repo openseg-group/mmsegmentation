@@ -5,7 +5,8 @@
 The simplest way is to convert your dataset to organize your data into folders.
 
 An example of file structure is as followed.
-```
+
+```none
 ├── data
 │   ├── my_dataset
 │   │   ├── img_dir
@@ -22,21 +23,27 @@ An example of file structure is as followed.
 │   │   │   ├── val
 
 ```
+
 A training pair will consist of the files with same suffix in img_dir/ann_dir.
 
 If `split` argument is given, only part of the files in img_dir/ann_dir will be loaded.
 We may specify the prefix of files we would like to be included in the split txt.
 
 More specifically, for a split txt like following,
-```
+
+```none
 xxx
 zzz
 ```
+
 Only
 `data/my_dataset/img_dir/train/xxx{img_suffix}`,
 `data/my_dataset/img_dir/train/zzz{img_suffix}`,
 `data/my_dataset/ann_dir/train/xxx{seg_map_suffix}`,
 `data/my_dataset/ann_dir/train/zzz{seg_map_suffix}` will be loaded.
+
+Note: The annotations are images of shape (H, W), the value pixel should fall in range `[0, num_classes - 1]`.
+You may use `'P'` mode of [pillow](https://pillow.readthedocs.io/en/stable/handbook/concepts.html#palette) to create your annotation image with color.
 
 ## Customize datasets by mixing dataset
 
@@ -47,6 +54,7 @@ Currently it supports to concat and repeat datasets.
 
 We use `RepeatDataset` as wrapper to repeat the dataset.
 For example, suppose the original dataset is `Dataset_A`, to repeat it, the config looks like the following
+
 ```python
 dataset_A_train = dict(
         type='RepeatDataset',
@@ -67,6 +75,7 @@ There 2 ways to concatenate the dataset.
     you can concatenate the dataset configs like the following.
 
     1. You may concatenate two `ann_dir`.
+
         ```python
         dataset_A_train = dict(
             type='Dataset_A',
@@ -75,6 +84,7 @@ There 2 ways to concatenate the dataset.
             pipeline=train_pipeline
         )
         ```
+
     2. You may concatenate two `split`.
 
         ```python
@@ -86,6 +96,7 @@ There 2 ways to concatenate the dataset.
             pipeline=train_pipeline
         )
         ```
+
     3. You may concatenate two `ann_dir` and `split` simultaneously.
 
         ```python
@@ -97,6 +108,7 @@ There 2 ways to concatenate the dataset.
             pipeline=train_pipeline
         )
         ```
+
         In this case, `ann_dir_1` and `ann_dir_2` are corresponding to `split_1.txt` and `split_2.txt`.
 
 2. In case the dataset you want to concatenate is different, you can concatenate the dataset configs like the following.
@@ -116,7 +128,6 @@ There 2 ways to concatenate the dataset.
         test = dataset_A_test
         )
     ```
-
 
 A more complex example that repeats `Dataset_A` and `Dataset_B` by N and M times, respectively, and then concatenates the repeated datasets is as the following.
 

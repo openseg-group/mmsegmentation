@@ -152,6 +152,10 @@ class LoadAnnotations(object):
             if 'leftImg8bit' in filename:
                 # convert the cityscapes labels
                 gt_semantic_seg = self._convert_cityscapes_label(gt_semantic_seg)
+        # modify if custom classes
+        if results.get('label_map', None) is not None:
+            for old_id, new_id in results['label_map'].items():
+                gt_semantic_seg[gt_semantic_seg == old_id] = new_id
         # reduce zero_label
         if self.reduce_zero_label:
             # avoid using underflow conversion
