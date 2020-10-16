@@ -2,11 +2,11 @@ _base_ = [
     '../_base_/models/deeplabv3plus_r50-d16.py',
     '../_base_/datasets/cityscapes_custom.py',
     '../_base_/default_runtime.py',
-    '../_base_/schedules/schedule_40k.py'
+    '../_base_/schedules/schedule_80k.py'
 ]
 norm_cfg = dict(type='SyncBN', requires_grad=True)
 model = dict(
-    type='EncoderDecoder',
+    type='ParallelEncoderDecoder',
     pretrained='open-mmlab://resnet101_v1c',
     backbone=dict(
         type='ResNetV1c',
@@ -48,12 +48,23 @@ model = dict(
         loss_decode=dict(
             type='CrossEntropyLoss', use_sigmoid=False, loss_weight=0.4)))
 # model training and testing settings
-train_cfg = dict() # set the weight for the consistency loss
+train_cfg = dict(consistency_loss_weight=0.0) # set the weight for the consistency loss
 test_cfg = dict(mode='whole')
 
-optimizer = dict(lr=0.02)
+optimizer = dict(lr=0.01)
 lr_config = dict(min_lr=1e-4)
 optimizer_config = dict(type='Fp16OptimizerHook', loss_scale=512.)
 
+# ensure the ann_dir for coarse set doesn't contain any labels
+data = dict(
+    samples_per_gpu=2,
+    workers_per_gpu=2,
+    train=dict(
+        img_dir=['../../../../dataset/original_cityscapes/leftImg8bit/train',
+                 '../../../../dataset/cityscapes/coarse/image'],
+        ann_dir=['../../../../dataset/original_cityscapes/gtFine/train',
+                 '../../../../dataset/cityscapes/coarse/nolabel'],
+        split = ['../../../../dataset/original_cityscapes/train.txt',
+                 '../../../../dataset/cityscapes/coarse3k_v1.txt']))
+
 find_unused_parameters=True
-# evaluation = dict(interval=200, metric='mIoU')

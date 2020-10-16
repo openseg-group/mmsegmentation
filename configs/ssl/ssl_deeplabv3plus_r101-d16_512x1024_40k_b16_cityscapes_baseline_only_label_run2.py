@@ -56,4 +56,4 @@ lr_config = dict(min_lr=1e-4)
 optimizer_config = dict(type='Fp16OptimizerHook', loss_scale=512.)
 
 find_unused_parameters=True
-# evaluation = dict(interval=200, metric='mIoU')
+evaluation = dict(interval=200, metric='mIoU')

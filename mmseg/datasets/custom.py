@@ -142,16 +142,23 @@ class CustomDataset(Dataset):
                     img_name = line.strip()
                     img_info = dict(filename=img_name + img_suffix)
                     if ann_dir is not None:
-                        seg_map = osp.join(ann_dir, img_name + seg_map_suffix)
-                        img_info['ann'] = dict(seg_map=seg_map, exist_label=osp.exists(seg_map))
+                        # seg_map = osp.join(ann_dir, img_name + seg_map_suffix)
+                        # img_info['ann'] = dict(seg_map=seg_map, exist_label=osp.exists(seg_map))
+                        seg_map = img_name + seg_map_suffix
+                        img_info['ann'] = dict(seg_map=seg_map,
+                                               exist_label=osp.exists(osp.join(ann_dir, seg_map)))
                     img_infos.append(img_info)
         else:
             for img in mmcv.scandir(img_dir, img_suffix, recursive=True):
-                img_info = dict(filename=osp.join(img_dir, img))
-                if ann_dir is not None:
-                    seg_map = osp.join(ann_dir,
-                                       img.replace(img_suffix, seg_map_suffix))
-                    img_info['ann'] = dict(seg_map=seg_map, exist_label=osp.exists(seg_map))
+                # img_info = dict(filename=osp.join(img_dir, img))
+                img_info = dict(filename=img)
+                if ann_dir is not None:                    
+                    # seg_map = osp.join(ann_dir,
+                    #                    img.replace(img_suffix, seg_map_suffix))
+                    # img_info['ann'] = dict(seg_map=seg_map, exist_label=osp.exists(seg_map))
+                    seg_map = img.replace(img_suffix, seg_map_suffix)
+                    img_info['ann'] = dict(seg_map=seg_map,
+                                           exist_label=osp.exists(osp.join(ann_dir, seg_map)))
                 img_infos.append(img_info)
 
         print_log(f'Loaded {len(img_infos)} images', logger=get_root_logger())
