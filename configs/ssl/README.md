@@ -10,11 +10,11 @@
 | DeepLabV3+ | R-101-D16 | 2975 Labeled Train | No | 512x1024 |  16 Labeled  |   40000 |    0.02   |   79.63  |
 | DeepLabV3+ | R-101-D16 | 2975 Labeled Train | Yes | 512x1024 |  16 Labeled  |   40000 |    0.02  |   -  |
 | DeepLabV3+ | R-101-D16 | 2975 Labeled Train + 3000 Unlabeled Coarse | Yes (loss-weight=0) | 512x1024  |  8 Labeled + 8 Unlabeled |   80000 |   0.01   |     |
-| DeepLabV3+ | R-101-D16 | 2975 Labeled Train + 3000 Unlabeled Coarse | Yes (loss-weight=0) | 512x1024  |  8 Labeled + 8 Unlabeled |   80000 |   0.01   |  79.50   |
+| DeepLabV3+ | R-101-D16 | 2975 Labeled Train + 3000 Unlabeled Coarse | Yes (loss-weight=100) | 512x1024  |  8 Labeled + 8 Unlabeled |   80000 |   0.01   |  79.50   |
 | DeepLabV3+ | R-101-D16 | 2975 Labeled Train + 3000 Unlabeled Coarse | Yes (loss-weight=0) | 512x1024  |  8 Labeled + 8 Unlabeled |   80000 |   0.02   |     |
 | DeepLabV3+ | R-101-D16 | 2975 Labeled Train + 3000 Unlabeled Coarse | Yes (loss-weight=10) | 512x1024 |  8 Labeled + 8 Unlabeled |   80000 |   0.02   |  79.52   |
-| DeepLabV3+ | R-101-D16 | 2975 Labeled Train + 3000 Unlabeled Coarse | Yes (loss-weight=0) | 512x1024  |  8 Labeled + 8 Unlabeled |   80000 |   0.02   |  79.40   |
-| DeepLabV3+ | R-101-D16 | 2975 Labeled Train + 3000 Unlabeled Coarse | Yes (loss-weight=0) | 512x1024  |  8 Labeled + 8 Unlabeled |   80000 |   0.02   |  78.42   |
+| DeepLabV3+ | R-101-D16 | 2975 Labeled Train + 3000 Unlabeled Coarse | Yes (loss-weight=50) | 512x1024  |  8 Labeled + 8 Unlabeled |   80000 |   0.02   |  79.40   |
+| DeepLabV3+ | R-101-D16 | 2975 Labeled Train + 3000 Unlabeled Coarse | Yes (loss-weight=100) | 512x1024  |  8 Labeled + 8 Unlabeled |   80000 |   0.02   |  78.42   |
 
 
 #### HRNet+OCR based results
