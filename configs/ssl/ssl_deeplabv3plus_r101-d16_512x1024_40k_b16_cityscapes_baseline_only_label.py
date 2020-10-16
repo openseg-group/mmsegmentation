@@ -1,6 +1,6 @@
 _base_ = [
     '../_base_/models/deeplabv3plus_r50-d16.py',
-    '../_base_/datasets/cityscapes.py',
+    '../_base_/datasets/cityscapes_custom.py',
     '../_base_/default_runtime.py',
     '../_base_/schedules/schedule_40k.py'
 ]
@@ -53,27 +53,7 @@ test_cfg = dict(mode='whole')
 
 optimizer = dict(lr=0.02)
 lr_config = dict(min_lr=1e-4)
-
-data_root='../../../../dataset/cityscapes/'
-dataset_type = 'CityscapesDataset'
-data = dict(
-    samples_per_gpu=2,
-    workers_per_gpu=2,
-    train=dict(
-        type=dataset_type,
-        data_root=data_root,
-        img_dir=['train/image'],
-        ann_dir=['train/label'],
-        split = ['train.txt']),
-    val=dict(
-        type=dataset_type,
-        data_root=data_root,
-        img_dir='val/image',
-        ann_dir='val/label'),
-    test=dict(
-        type=dataset_type,
-        data_root=data_root,
-        img_dir='val/image',
-        ann_dir='val/label'))
+optimizer_config = dict(type='Fp16OptimizerHook', loss_scale=512.)
 
 find_unused_parameters=True
+evaluation = dict(interval=200, metric='mIoU')

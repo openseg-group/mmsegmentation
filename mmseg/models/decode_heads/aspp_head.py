@@ -9,7 +9,6 @@ from .decode_head import BaseDecodeHead
 
 class ASPPModule(nn.ModuleList):
     """Atrous Spatial Pyramid Pooling (ASPP) Module.
-
     Args:
         dilations (tuple[int]): Dilation rate of each layer.
         in_channels (int): Input channels.

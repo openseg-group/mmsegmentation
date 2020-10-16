@@ -3,7 +3,7 @@
 # PYTHON="/opt/conda/bin/python"
 PYTHON="/data/anaconda/envs/pytorch1.5.1/bin/python"
 
-# $PYTHON -m pip install mmcv-full==latest+torch1.5.0+cu101 -f https://openmmlab.oss-accelerate.aliyuncs.com/mmcv/dist/index.html
+# $PYTHON -m pip install mmcv-full==1.1.5
 # $PYTHON -m pip install -r requirements/build.txt 
 # $PYTHON -m pip install -e .
 # $PYTHON -m pip install -r requirements/optional.txt 

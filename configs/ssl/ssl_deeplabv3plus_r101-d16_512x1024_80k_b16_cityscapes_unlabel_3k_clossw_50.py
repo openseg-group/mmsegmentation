@@ -1,6 +1,6 @@
 _base_ = [
     '../_base_/models/deeplabv3plus_r50-d16.py',
-    '../_base_/datasets/cityscapes.py',
+    '../_base_/datasets/cityscapes_custom.py',
     '../_base_/default_runtime.py',
     '../_base_/schedules/schedule_80k.py'
 ]
@@ -51,30 +51,20 @@ model = dict(
 train_cfg = dict(consistency_loss_weight=50) # set the weight for the consistency loss
 test_cfg = dict(mode='whole')
 
-optimizer = dict(lr=0.01)
+optimizer = dict(lr=0.02)
 lr_config = dict(min_lr=1e-4)
 optimizer_config = dict(type='Fp16OptimizerHook', loss_scale=512.)
 
-data_root='../../../../dataset/cityscapes/'
-dataset_type = 'CityscapesDataset'
+# ensure the ann_dir for coarse set doesn't contain any labels
 data = dict(
     samples_per_gpu=2,
     workers_per_gpu=2,
     train=dict(
-        type=dataset_type,
-        data_root=data_root,
-        img_dir=['train/image', 'coarse/image'],
-        ann_dir=['train/label', 'train/label'],
-        split = ['train.txt', 'coarse3k_v1.txt']),
-    val=dict(
-        type=dataset_type,
-        data_root=data_root,
-        img_dir='val/image',
-        ann_dir='val/label'),
-    test=dict(
-        type=dataset_type,
-        data_root=data_root,
-        img_dir='val/image',
-        ann_dir='val/label'))
+        img_dir=['../../../../dataset/original_cityscapes/leftImg8bit/train',
+                 '../../../../dataset/cityscapes/coarse/image'],
+        ann_dir=['../../../../dataset/original_cityscapes/gtFine/train',
+                 '../../../../dataset/cityscapes/coarse/nolabel'],
+        split = ['../../../../dataset/original_cityscapes/train.txt',
+                 '../../../../dataset/cityscapes/coarse3k_v1.txt']))
 
 find_unused_parameters=True

@@ -130,6 +130,9 @@ class CustomDataset(Dataset):
 
         Returns:
             list[dict]: All image info of dataset.
+
+        #TODO: currently, we need to ensure that the label files have exactly the
+               same folder structures as the image files, which is not flexible.
         """
 
         img_infos = []
@@ -144,7 +147,7 @@ class CustomDataset(Dataset):
                     img_infos.append(img_info)
         else:
             for img in mmcv.scandir(img_dir, img_suffix, recursive=True):
-                img_info = dict(filename=img)
+                img_info = dict(filename=osp.join(img_dir, img))
                 if ann_dir is not None:
                     seg_map = osp.join(ann_dir,
                                        img.replace(img_suffix, seg_map_suffix))

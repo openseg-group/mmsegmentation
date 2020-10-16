@@ -3,7 +3,7 @@ nvidia-smi
 
 PYTHON="/opt/conda/bin/python"
 
-$PYTHON -m pip install mmcv==1.1.5
+$PYTHON -m pip install mmcv-full==1.1.5
 $PYTHON -m pip install -e .
 
 CONFIG=$1

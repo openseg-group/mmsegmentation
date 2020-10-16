@@ -411,7 +411,7 @@ class CascadeParallelEncoderDecoder(ParallelEncoderDecoder):
     def encode_decode(self, img, img_metas):
         """Encode images with backbone and decode into a semantic segmentation
         map of the same size as input."""
-        x = self.extract_feat(img)
+        x = self.extract_feat_l(img)
         out = self.decode_head_l[0].forward_test(x, img_metas, self.test_cfg)
         for i in range(1, self.num_stages):
             out = self.decode_head_l[i].forward_test(x, out, img_metas,
@@ -460,5 +460,61 @@ class CascadeParallelEncoderDecoder(ParallelEncoderDecoder):
             loss_decode = self.decode_head_r[i].forward_train(
                 x, prev_outputs, img_metas, gt_semantic_seg, self.train_cfg)
             losses.update(add_prefix(loss_decode, f'decode_r_{i}'))
+
+        return losses
+
+    def forward_train(self, img, img_metas, gt_semantic_seg):
+        """Forward function for training.
+
+        Args:
+            img (Tensor): Input images.
+            img_metas (list[dict]): List of image info dict where each dict
+                has: 'img_shape', 'scale_factor', 'flip', and may also contain
+                'filename', 'ori_shape', 'pad_shape', and 'img_norm_cfg'.
+                For details on the values of these keys see
+                `mmseg/datasets/pipelines/formatting.py:Collect`.
+            gt_semantic_seg (Tensor): Semantic segmentation masks
+                used if the architecture supports semantic segmentation task.
+
+        Returns:
+            dict[str, Tensor]: a dictionary of loss components
+        """
+
+        x_l = self.extract_feat_l(img)
+        x_r = self.extract_feat_r(img)
+
+        losses = dict()
+
+        loss_decode_l = self._decode_head_forward_train_l(x_l, img_metas,
+                                                      gt_semantic_seg)
+        loss_decode_r = self._decode_head_forward_train_r(x_r, img_metas,
+                                                      gt_semantic_seg)
+        losses.update(loss_decode_l)
+        losses.update(loss_decode_r)
+
+        if self.with_auxiliary_head:
+            loss_aux_l = self._auxiliary_head_forward_train_l(
+                x_l, img_metas, gt_semantic_seg)
+            loss_aux_r = self._auxiliary_head_forward_train_r(
+                x_r, img_metas, gt_semantic_seg)
+            losses.update(loss_aux_l)
+            losses.update(loss_aux_r)
+
+        pred_l_list = []
+        pred_r_list = []
+        for i in range(1, self.num_stages):
+            # forward test again, maybe unnecessary for most methods.
+            prev_outputs = self.decode_head_l[i - 1].forward_test(
+                x_l, img_metas, self.test_cfg)
+            pred_l_list.append(self.decode_head_l[i].forward(x_l, prev_outputs))
+
+            prev_outputs = self.decode_head_r[i - 1].forward_test(
+                x_r, img_metas, self.test_cfg)
+            pred_r_list.append(self.decode_head_r[i].forward(x_r, prev_outputs))
+
+        pred_l = F.softmax(pred_l_list[-1], 1)
+        pred_r = F.softmax(pred_r_list[-1], 1)
+        losses['consistency_loss'] = self.train_cfg.consistency_loss_weight * \
+            (F.mse_loss(pred_l, pred_r.detach()) + F.mse_loss(pred_r, pred_l.detach()))
 
         return losses
