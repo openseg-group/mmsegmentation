@@ -6,7 +6,7 @@ _base_ = [
 ]
 norm_cfg = dict(type='SyncBN', requires_grad=True)
 model = dict(
-    type='EncoderDecoder',
+    type='ParallelEncoderDecoder',
     pretrained='open-mmlab://resnet101_v1c',
     backbone=dict(
         type='ResNetV1c',
@@ -48,7 +48,7 @@ model = dict(
         loss_decode=dict(
             type='CrossEntropyLoss', use_sigmoid=False, loss_weight=0.4)))
 # model training and testing settings
-train_cfg = dict() # set the weight for the consistency loss
+train_cfg = dict(consistency_loss_weight=0.0) # set the weight for the consistency loss
 test_cfg = dict(mode='whole')
 
 optimizer = dict(lr=0.02)
