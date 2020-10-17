@@ -46,24 +46,13 @@ model = dict(
 )
 
 # model training and testing settings
-train_cfg = dict(consistency_loss_weight=100) # set the weight for the consistency loss
+train_cfg = dict(consistency_loss_weight=50) # set the weight for the consistency loss
 test_cfg = dict(mode='whole')
 
-optimizer = dict(lr=0.02)
+optimizer = dict(lr=0.01)
 lr_config = dict(min_lr=1e-4)
 optimizer_config = dict(type='Fp16OptimizerHook', loss_scale=512.)
 
-# ensure the ann_dir for coarse set doesn't contain any labels
-data = dict(
-    samples_per_gpu=2,
-    workers_per_gpu=2,
-    train=dict(
-        img_dir=['../../../../dataset/original_cityscapes/leftImg8bit/train',
-                 '../../../../dataset/cityscapes/coarse/image'],
-        ann_dir=['../../../../dataset/original_cityscapes/gtFine/train',
-                 '../../../../dataset/cityscapes/coarse/nolabel'],
-        split = ['../../../../dataset/original_cityscapes/train.txt',
-                 '../../../../dataset/cityscapes/coarse3k_v1.txt']))
-
+data = dict(samples_per_gpu=1, workers_per_gpu=1)
 find_unused_parameters=True
 # evaluation = dict(interval=200, metric='mIoU')

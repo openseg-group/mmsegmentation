@@ -48,10 +48,10 @@ model = dict(
         loss_decode=dict(
             type='CrossEntropyLoss', use_sigmoid=False, loss_weight=0.4)))
 # model training and testing settings
-train_cfg = dict(consistency_loss_weight=10) # set the weight for the consistency loss
+train_cfg = dict(consistency_loss_weight=20) # set the weight for the consistency loss
 test_cfg = dict(mode='whole')
 
-optimizer = dict(lr=0.02)
+optimizer = dict(lr=0.01)
 lr_config = dict(min_lr=1e-4)
 optimizer_config = dict(type='Fp16OptimizerHook', loss_scale=512.)
 

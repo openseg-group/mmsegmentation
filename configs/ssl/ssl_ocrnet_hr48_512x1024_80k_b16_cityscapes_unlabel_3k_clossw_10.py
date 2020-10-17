@@ -46,7 +46,7 @@ model = dict(
 )
 
 # model training and testing settings
-train_cfg = dict(consistency_loss_weight=100) # set the weight for the consistency loss
+train_cfg = dict(consistency_loss_weight=10) # set the weight for the consistency loss
 test_cfg = dict(mode='whole')
 
 optimizer = dict(lr=0.01)
