@@ -17,4 +17,4 @@ model = dict(
             channels=sum([48, 96, 192, 384]),
             num_classes=19,
 ))
-# evaluation = dict(interval=100, metric='mIoU')
+evaluation = dict(interval=100, metric='mIoU')

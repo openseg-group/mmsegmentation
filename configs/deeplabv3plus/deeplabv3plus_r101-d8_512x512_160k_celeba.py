@@ -10,4 +10,3 @@ model = dict(
     decode_head=dict(num_classes=19),
     auxiliary_head=dict(num_classes=19))
 test_cfg = dict(mode='whole')
-
