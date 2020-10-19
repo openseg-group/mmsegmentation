@@ -4,11 +4,13 @@
 ### Cityscapes
 
 
-#### DeepLabv3+ based results
+#### DeepLabv3+ based results (all)
 | Method |      Backbone      | Dataset | Two-branch model + Consistency Loss | Crop Size | Batch Size | Max Iters |  Base LR |  mIoU (single-scale) |
 |--------|--------------------|-----------|-----------|--------:|----------|----------------|------:|--------------:|
 | DeepLabV3+ | R-101-D16 | 2975 Labeled | No | 512x1024 |  16 Labeled  |   40000 |    0.02   |   79.63  |
-| DeepLabV3+ | R-101-D16 | 2975 Labeled | No | 512x1024 |  8 Labeled  |   80000 |    0.01    |   80.07 |
+| DeepLabV3+ | R-101-D16 | 2975 Labeled | No | 512x1024 |  8 Labeled  |   80000 |    0.01    |   80.07  |
+| DeepLabV3+ | R-101-D16 | 2975 Labeled | Yes (loss-weight=10) | 512x1024 |  8 Labeled  |   80000 |    0.01    |   -  |
+| DeepLabV3+ | R-101-D16 | 2975 Labeled | Yes (loss-weight=50) | 512x1024 |  8 Labeled  |   80000 |    0.01    |   -  |
 | DeepLabV3+ | R-101-D16 | 2975 Labeled | Yes (loss-weight=10) | 512x1024 |  16 Labeled  |   40000 |    0.02   |   79.98  |
 | DeepLabV3+ | R-101-D16 | 2975 Labeled | Yes (loss-weight=20) | 512x1024 |  16 Labeled  |   40000 |    0.02   |   79.52  |
 | DeepLabV3+ | R-101-D16 | 2975 Labeled | Yes (loss-weight=50) | 512x1024 |  16 Labeled  |   40000 |    0.02   |   80.03  |
@@ -28,11 +30,12 @@
 | DeepLabV3+ | R-101-D16 | 2975 Labeled + 3000 Unlabeled | Yes (loss-weight=100)| 512x1024  |  8 Labeled + 8 Unlabeled | 80000 |   0.02   |  78.42   |
 
 
+
 #### HRNet+OCR based results
 | Method |      Backbone      | Dataset | Two-branch model + Consistency Loss | Crop Size | Batch Size | Max Iters |  Base LR |  mIoU (single-scale) |
 |--------|--------------------|-----------|-----------|--------:|----------|----------------|------:|--------------:|
 | OCRNet  | HRNetV2p-W48 | 2975 Labeled | No | 512x1024 |  8 Labeled  |   80000 |    0.01  |   81.21   |
 | OCRNet  | HRNetV2p-W48 | 2975 Labeled | Yes (loss-weight=10) | 512x1024 |  8 Labeled  |   80000 |    0.01  |   81.62   |
-| OCRNet  | HRNetV2p-W48 | 2975 Labeled | Yes (loss-weight=50) | 512x1024 |  8 Labeled  |   80000 |    0.01  |   -   |
-| OCRNet  | HRNetV2p-W48 | 2975 Labeled + + 3000 Unlabeled | Yes (loss-weight=10) | 512x1024 |  8 Labeled + 8 Unlabeled  |  80000 |    0.01  |   -   |
-| OCRNet  | HRNetV2p-W48 | 2975 Labeled + + 3000 Unlabeled | Yes (loss-weight=50) | 512x1024 |  8 Labeled + 8 Unlabeled  |  80000 |    0.01  |   -   |
+| OCRNet  | HRNetV2p-W48 | 2975 Labeled | Yes (loss-weight=50) | 512x1024 |  8 Labeled  |   80000 |    0.01  |   81.31   |
+| OCRNet  | HRNetV2p-W48 | 2975 Labeled + 3000 Unlabeled | Yes (loss-weight=10) | 512x1024 |  8 Labeled + 8 Unlabeled  |  80000 |    0.01  |   81.27   |
+| OCRNet  | HRNetV2p-W48 | 2975 Labeled + 3000 Unlabeled | Yes (loss-weight=50) | 512x1024 |  8 Labeled + 8 Unlabeled  |  80000 |    0.01  |   81.36   |
