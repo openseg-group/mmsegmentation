@@ -8,7 +8,7 @@
 | Method |      Backbone      | Dataset | Two-branch model + Consistency Loss | Crop Size | Batch Size | Max Iters |  Base LR |  mIoU (single-scale) |
 |--------|--------------------|-----------|-----------|--------:|----------|----------------|------:|--------------:|
 | DeepLabV3+ | R-101-D16 | 2975 Labeled | No | 512x1024 |  16 Labeled  |   40000 |    0.02   |   79.63  |
-| DeepLabV3+ | R-101-D16 | 2975 Labeled | No | 512x1024 |  8 Labeled  |   80000 |    0.01    |   80.07  |
+| DeepLabV3+ | R-101-D16 | 2975 Labeled | No | 512x1024 |  16 Labeled (need to recheck)  |   80000 |    0.01    |   80.07  |
 | DeepLabV3+ | R-101-D16 | 2975 Labeled | Yes (loss-weight=10) | 512x1024 |  8 Labeled  |   80000 |    0.01    |   -  |
 | DeepLabV3+ | R-101-D16 | 2975 Labeled | Yes (loss-weight=50) | 512x1024 |  8 Labeled  |   80000 |    0.01    |   -  |
 | DeepLabV3+ | R-101-D16 | 2975 Labeled | Yes (loss-weight=10) | 512x1024 |  16 Labeled  |   40000 |    0.02   |   79.98  |
