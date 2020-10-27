@@ -46,7 +46,12 @@ model = dict(
 )
 
 # model training and testing settings
-train_cfg = dict(consistency_loss_weight=10) # set the weight for the consistency loss
+# consistency loss hyper-parameters
+train_cfg = dict(consistency_loss_weight=0.2,
+                 consistency_w_hard_label=True,
+                 auxiliary_consistency=True,
+                 confidense_threshold=0.7,
+                 temperature=2) # set the weight for the consistency loss
 test_cfg = dict(mode='whole')
 
 optimizer = dict(lr=0.01)
@@ -63,7 +68,6 @@ data = dict(
         ann_dir=['../../../../dataset/original_cityscapes/gtFine/train',
                  '../../../../dataset/cityscapes/coarse/nolabel'],
         split = ['../../../../dataset/original_cityscapes/train.txt',
-                 '../../../../dataset/cityscapes/coarse3k_v1.txt']))
+                 '../../../../dataset/cityscapes/uniform_coarse3k.txt']))
 
 find_unused_parameters=True
-# evaluation = dict(interval=200, metric='mIoU')

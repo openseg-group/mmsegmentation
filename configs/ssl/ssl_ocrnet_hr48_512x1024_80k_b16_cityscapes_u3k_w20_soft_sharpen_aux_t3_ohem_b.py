@@ -40,13 +40,18 @@ model = dict(
             num_classes=19,
             norm_cfg=norm_cfg,
             align_corners=True,
+            sampler=dict(type='OHEMPixelSampler', thresh=0.7, min_kept=200000),
             loss_decode=dict(
                 type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0)),
     ]
 )
 
 # model training and testing settings
-train_cfg = dict(consistency_loss_weight=50) # set the weight for the consistency loss
+# consistency loss hyper-parameters
+train_cfg = dict(consistency_loss_weight=20,
+                 consistency_w_hard_label=False,
+                 auxiliary_consistency=True,
+                 temperature=3) # set the weight for the consistency loss
 test_cfg = dict(mode='whole')
 
 optimizer = dict(lr=0.01)
@@ -63,7 +68,6 @@ data = dict(
         ann_dir=['../../../../dataset/original_cityscapes/gtFine/train',
                  '../../../../dataset/cityscapes/coarse/nolabel'],
         split = ['../../../../dataset/original_cityscapes/train.txt',
-                 '../../../../dataset/cityscapes/coarse3k_v1.txt']))
+                 '../../../../dataset/cityscapes/uniform_coarse3k.txt']))
 
 find_unused_parameters=True
-# evaluation = dict(interval=200, metric='mIoU')

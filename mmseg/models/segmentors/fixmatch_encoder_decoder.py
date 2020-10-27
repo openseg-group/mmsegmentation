@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torchvision.transforms as transforms
 
 from mmseg.core import add_prefix
 from mmseg.ops import resize
@@ -11,14 +12,14 @@ from .base import BaseSegmentor
 import pdb
 
 @SEGMENTORS.register_module()
-class ParallelEncoderDecoder(BaseSegmentor):
+class FixMatchEncoderDecoder(BaseSegmentor):
     """Parallel (Two Branches) Encoder Decoder segmentors.
 
     ParallelEncoderDecoder typically consists of parallelized backbone, decode_head, auxiliary_head.
     Note that auxiliary_head is only used for deep supervision during training,
     which could be dumped during inference.
 
-    We constrain the predictions of the two parallelized encoder-decoder to be close with MSE loss.
+    We constrain the predictions of the strongly augmented samples to be as close as the weakly augmented samples
     """
 
     def __init__(self,
@@ -29,12 +30,10 @@ class ParallelEncoderDecoder(BaseSegmentor):
                  train_cfg=None,
                  test_cfg=None,
                  pretrained=None):
-        super(ParallelEncoderDecoder, self).__init__()
+        super(FixMatchEncoderDecoder, self).__init__()
         self.backbone_l = builder.build_backbone(backbone)
-        self.backbone_r = builder.build_backbone(backbone)
         if neck is not None:
             self.neck_l = builder.build_neck(neck)
-            self.neck_r = builder.build_neck(neck)
         self._init_decode_head(decode_head)
         self._init_auxiliary_head(auxiliary_head)
 
@@ -42,12 +41,16 @@ class ParallelEncoderDecoder(BaseSegmentor):
         self.test_cfg = test_cfg
 
         self.init_weights(pretrained=pretrained)
-        # assert self.with_decode_head
+        
+        self.strong_aug = transforms.ColorJitter(0.8, 0.8, 0.8, 0.2)
+        self.mean = [123.675, 116.28, 103.53]
+        self.std = [58.395, 57.12, 57.375]
+        self.to_bgr = True
+        self.to_rgb = True
 
     def _init_decode_head(self, decode_head):
         """Initialize ``decode_head``"""
         self.decode_head_l = builder.build_head(decode_head)
-        self.decode_head_r = builder.build_head(decode_head)
         self.align_corners = self.decode_head_l.align_corners
         self.num_classes = self.decode_head_l.num_classes
 
@@ -56,13 +59,10 @@ class ParallelEncoderDecoder(BaseSegmentor):
         if auxiliary_head is not None:
             if isinstance(auxiliary_head, list):
                 self.auxiliary_head_l = nn.ModuleList()
-                self.auxiliary_head_r = nn.ModuleList()
                 for head_cfg in auxiliary_head:
                     self.auxiliary_head_l.append(builder.build_head(head_cfg))
-                    self.auxiliary_head_r.append(builder.build_head(head_cfg))
             else:
                 self.auxiliary_head_l = builder.build_head(auxiliary_head)
-                self.auxiliary_head_r = builder.build_head(auxiliary_head)
 
     def init_weights(self, pretrained=None):
         """Initialize the weights in backbone and heads.
@@ -71,24 +71,15 @@ class ParallelEncoderDecoder(BaseSegmentor):
             pretrained (str, optional): Path to pre-trained weights.
                 Defaults to None.
         """
-
         super(ParallelEncoderDecoder, self).init_weights(pretrained)
         self.backbone_l.init_weights(pretrained=pretrained)
-        self.backbone_r.init_weights(pretrained=pretrained)
         self.decode_head_l.init_weights()
-        self.decode_head_r.init_weights()
         if self.with_auxiliary_head:
             if isinstance(self.auxiliary_head_l, nn.ModuleList):
                 for aux_head in self.auxiliary_head_l:
                     aux_head.init_weights()
             else:
                 self.auxiliary_head_l.init_weights()
-
-            if isinstance(self.auxiliary_head_r, nn.ModuleList):
-                for aux_head in self.auxiliary_head_r:
-                    aux_head.init_weights()
-            else:
-                self.auxiliary_head_r.init_weights()
 
     def extract_feat_l(self, img):
         """Extract features from images."""
@@ -99,9 +90,9 @@ class ParallelEncoderDecoder(BaseSegmentor):
 
     def extract_feat_r(self, img):
         """Extract features from images."""
-        x = self.backbone_r(img)
+        x = self.backbone_l(img)
         if self.with_neck:
-            x = self.neck_r(x)
+            x = self.neck_l(x)
         return x
 
     def encode_decode(self, img, img_metas):
@@ -130,7 +121,7 @@ class ParallelEncoderDecoder(BaseSegmentor):
         """Run forward function and calculate loss for decode head in
         training."""
         losses = dict()
-        loss_decode = self.decode_head_r.forward_train(x, img_metas,
+        loss_decode = self.decode_head_l.forward_train(x, img_metas,
                                                      gt_semantic_seg,
                                                      self.train_cfg)
         losses.update(add_prefix(loss_decode, 'decode_r'))
@@ -163,14 +154,14 @@ class ParallelEncoderDecoder(BaseSegmentor):
         """Run forward function and calculate loss for auxiliary head in
         training."""
         losses = dict()
-        if isinstance(self.auxiliary_head_r, nn.ModuleList):
-            for idx, aux_head in enumerate(self.auxiliary_head_r):
+        if isinstance(self.auxiliary_head_l, nn.ModuleList):
+            for idx, aux_head in enumerate(self.auxiliary_head_l):
                 loss_aux_r = aux_head.forward_train(x, img_metas,
                                                   gt_semantic_seg,
                                                   self.train_cfg)
                 losses.update(add_prefix(loss_aux_r, f'aux_r_{idx}'))
         else:
-            loss_aux_r = self.auxiliary_head_r.forward_train(
+            loss_aux_r = self.auxiliary_head_l.forward_train(
                 x, img_metas, gt_semantic_seg, self.train_cfg)
             losses.update(add_prefix(loss_aux_r, 'aux_r'))
 
@@ -200,7 +191,11 @@ class ParallelEncoderDecoder(BaseSegmentor):
         """
 
         x_l = self.extract_feat_l(img)
-        x_r = self.extract_feat_r(img)
+
+        strong_aug_img = mmcv.imdenormalize(img, self.mean, self.std, self.to_bgr)
+        strong_aug_img = self.strong_aug(strong_aug_img)
+        strong_aug_img = mmcv.imnormalize(strong_aug_img, self.mean, self.std, self.to_rgb)
+        x_r = self.extract_feat_r(strong_aug_img)
 
         losses = dict()
 
@@ -221,9 +216,8 @@ class ParallelEncoderDecoder(BaseSegmentor):
 
         #TODO add the weights for consistency loss
         pred_l = F.softmax(self.decode_head_l.forward(x_l), 1)
-        pred_r = F.softmax(self.decode_head_r.forward(x_r), 1)
-        losses['consistency_loss'] = self.train_cfg.consistency_loss_weight * \
-            (F.mse_loss(pred_l, pred_r.detach()) + F.mse_loss(pred_r, pred_l.detach()))
+        pred_r = F.softmax(self.decode_head_l.forward(x_r), 1)
+        losses['consistency_loss'] = self.train_cfg.consistency_loss_weight * F.mse_loss(pred_r, pred_l.detach())
 
         return losses
 
@@ -346,7 +340,7 @@ class ParallelEncoderDecoder(BaseSegmentor):
 
 
 @SEGMENTORS.register_module()
-class CascadeParallelEncoderDecoder(ParallelEncoderDecoder):
+class CascadeFixMatchEncoderDecoder(FixMatchEncoderDecoder):
     """Cascade Parallel Encoder Decoder segmentors.
 
     CascadeParallelEncoderDecoder almost the same as ParallelEncoderDecoder, 
@@ -363,7 +357,7 @@ class CascadeParallelEncoderDecoder(ParallelEncoderDecoder):
                  test_cfg=None,
                  pretrained=None):
         self.num_stages = num_stages
-        super(CascadeParallelEncoderDecoder, self).__init__(
+        super(CascadeFixMatchEncoderDecoder, self).__init__(
             backbone=backbone,
             decode_head=decode_head,
             neck=neck,
@@ -379,9 +373,6 @@ class CascadeParallelEncoderDecoder(ParallelEncoderDecoder):
         self.decode_head_l = nn.ModuleList()
         for i in range(self.num_stages):
             self.decode_head_l.append(builder.build_head(decode_head[i]))
-        self.decode_head_r = nn.ModuleList()
-        for i in range(self.num_stages):
-            self.decode_head_r.append(builder.build_head(decode_head[i]))
         self.align_corners = self.decode_head_l[-1].align_corners
         self.num_classes = self.decode_head_l[-1].num_classes
 
@@ -393,21 +384,14 @@ class CascadeParallelEncoderDecoder(ParallelEncoderDecoder):
                 Defaults to None.
         """
         self.backbone_l.init_weights(pretrained=pretrained)
-        self.backbone_r.init_weights(pretrained=pretrained)
         for i in range(self.num_stages):
             self.decode_head_l[i].init_weights()
-            self.decode_head_r[i].init_weights()
         if self.with_auxiliary_head:
             if isinstance(self.auxiliary_head_l, nn.ModuleList):
                 for aux_head in self.auxiliary_head_l:
                     aux_head.init_weights()
             else:
                 self.auxiliary_head_l.init_weights()
-            if isinstance(self.auxiliary_head_r, nn.ModuleList):
-                for aux_head in self.auxiliary_head_r:
-                    aux_head.init_weights()
-            else:
-                self.auxiliary_head_r.init_weights()
 
     def encode_decode(self, img, img_metas):
         """Encode images with backbone and decode into a semantic segmentation
@@ -449,16 +433,16 @@ class CascadeParallelEncoderDecoder(ParallelEncoderDecoder):
         training."""
         losses = dict()
 
-        loss_decode = self.decode_head_r[0].forward_train(
+        loss_decode = self.decode_head_l[0].forward_train(
             x, img_metas, gt_semantic_seg, self.train_cfg)
 
         losses.update(add_prefix(loss_decode, 'decode_r_0'))
 
         for i in range(1, self.num_stages):
             # forward test again, maybe unnecessary for most methods.
-            prev_outputs = self.decode_head_r[i - 1].forward_test(
+            prev_outputs = self.decode_head_l[i - 1].forward_test(
                 x, img_metas, self.test_cfg)
-            loss_decode = self.decode_head_r[i].forward_train(
+            loss_decode = self.decode_head_l[i].forward_train(
                 x, prev_outputs, img_metas, gt_semantic_seg, self.train_cfg)
             losses.update(add_prefix(loss_decode, f'decode_r_{i}'))
 
@@ -482,6 +466,11 @@ class CascadeParallelEncoderDecoder(ParallelEncoderDecoder):
         """
 
         x_l = self.extract_feat_l(img)
+
+        strong_aug_img = mmcv.imdenormalize(img, self.mean, self.std, self.to_bgr)
+        strong_aug_img = self.strong_aug(strong_aug_img)
+        strong_aug_img = mmcv.imnormalize(strong_aug_img, self.mean, self.std, self.to_rgb)
+        x_r = self.extract_feat_r(strong_aug_img)
         x_r = self.extract_feat_r(img)
 
         losses = dict()
@@ -511,11 +500,11 @@ class CascadeParallelEncoderDecoder(ParallelEncoderDecoder):
             prev_output = cur_output
 
         pred_r_list = []
-        prev_output = self.decode_head_r[0].forward_test(
+        prev_output = self.decode_head_l[0].forward_test(
             x_r, img_metas, self.test_cfg)
         pred_r_list.append(prev_output)
         for i in range(1, self.num_stages):
-            cur_output = self.decode_head_r[i].forward(x_r, prev_output)
+            cur_output = self.decode_head_l[i].forward(x_r, prev_output)
             pred_r_list.append(cur_output)
             prev_output = cur_output
 

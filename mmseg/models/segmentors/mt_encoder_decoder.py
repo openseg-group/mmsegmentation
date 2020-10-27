@@ -11,7 +11,7 @@ from .base import BaseSegmentor
 import pdb
 
 @SEGMENTORS.register_module()
-class ParallelEncoderDecoder(BaseSegmentor):
+class MeanTeacherEncoderDecoder(BaseSegmentor):
     """Parallel (Two Branches) Encoder Decoder segmentors.
 
     ParallelEncoderDecoder typically consists of parallelized backbone, decode_head, auxiliary_head.
@@ -29,7 +29,7 @@ class ParallelEncoderDecoder(BaseSegmentor):
                  train_cfg=None,
                  test_cfg=None,
                  pretrained=None):
-        super(ParallelEncoderDecoder, self).__init__()
+        super(MeanTeacherEncoderDecoder, self).__init__()
         self.backbone_l = builder.build_backbone(backbone)
         self.backbone_r = builder.build_backbone(backbone)
         if neck is not None:
@@ -42,7 +42,8 @@ class ParallelEncoderDecoder(BaseSegmentor):
         self.test_cfg = test_cfg
 
         self.init_weights(pretrained=pretrained)
-        # assert self.with_decode_head
+        self.cur_iter = 0
+        self.ema_decay = 0.999
 
     def _init_decode_head(self, decode_head):
         """Initialize ``decode_head``"""
@@ -90,6 +91,29 @@ class ParallelEncoderDecoder(BaseSegmentor):
             else:
                 self.auxiliary_head_r.init_weights()
 
+    def _update_ema_variables(self):
+        # update the teacher model by exponential moving average
+        ema_decay = min(1 - 1 / (cur_step + 1), self.ema_decay)
+        # update the backbone parameters
+        for t_param, s_param in zip(self.backbone_r.parameters(), self.backbone_l.parameters()):
+            t_param.data.mul_(ema_decay).add_(1 - ema_decay, s_param.data)
+        # update the decode head parameters
+        for t_param, s_param in zip(self.decode_head_r.parameters(), self.decode_head_l.parameters()):
+            t_param.data.mul_(ema_decay).add_(1 - ema_decay, s_param.data)
+        # update the neck head parameters
+        if self.with_neck:
+            for t_param, s_param in zip(self.neck_r.parameters(), self.neck_l.parameters()):
+                t_param.data.mul_(ema_decay).add_(1 - ema_decay, s_param.data)
+        # update the auxiliary head parameters
+        if self.with_auxiliary_head:
+            if isinstance(self.auxiliary_head_l, nn.ModuleList):
+                for aux_head_l, aux_head_r in zip(self.auxiliary_head_l, self.auxiliary_head_r):
+                    for t_param, s_param in zip(self.aux_head_r.parameters(), self.aux_head_l.parameters()):
+                        t_param.data.mul_(ema_decay).add_(1 - ema_decay, s_param.data)
+            else:
+                for t_param, s_param in zip(self.auxiliary_head_r.parameters(), self.auxiliary_head_l.parameters()):
+                    t_param.data.mul_(ema_decay).add_(1 - ema_decay, s_param.data)
+
     def extract_feat_l(self, img):
         """Extract features from images."""
         x = self.backbone_l(img)
@@ -126,16 +150,6 @@ class ParallelEncoderDecoder(BaseSegmentor):
         losses.update(add_prefix(loss_decode, 'decode_l'))
         return losses
 
-    def _decode_head_forward_train_r(self, x, img_metas, gt_semantic_seg):
-        """Run forward function and calculate loss for decode head in
-        training."""
-        losses = dict()
-        loss_decode = self.decode_head_r.forward_train(x, img_metas,
-                                                     gt_semantic_seg,
-                                                     self.train_cfg)
-        losses.update(add_prefix(loss_decode, 'decode_r'))
-        return losses
-
     def _decode_head_forward_test(self, x, img_metas):
         """Run forward function and calculate loss for decode head in
         inference."""
@@ -159,22 +173,6 @@ class ParallelEncoderDecoder(BaseSegmentor):
         
         return losses
 
-    def _auxiliary_head_forward_train_r(self, x, img_metas, gt_semantic_seg):
-        """Run forward function and calculate loss for auxiliary head in
-        training."""
-        losses = dict()
-        if isinstance(self.auxiliary_head_r, nn.ModuleList):
-            for idx, aux_head in enumerate(self.auxiliary_head_r):
-                loss_aux_r = aux_head.forward_train(x, img_metas,
-                                                  gt_semantic_seg,
-                                                  self.train_cfg)
-                losses.update(add_prefix(loss_aux_r, f'aux_r_{idx}'))
-        else:
-            loss_aux_r = self.auxiliary_head_r.forward_train(
-                x, img_metas, gt_semantic_seg, self.train_cfg)
-            losses.update(add_prefix(loss_aux_r, 'aux_r'))
-
-        return losses
 
     def forward_dummy(self, img):
         """Dummy forward function."""
@@ -198,32 +196,28 @@ class ParallelEncoderDecoder(BaseSegmentor):
         Returns:
             dict[str, Tensor]: a dictionary of loss components
         """
+        self._update_ema_variables()
+        self.cur_iter += 1
 
         x_l = self.extract_feat_l(img)
-        x_r = self.extract_feat_r(img)
+        with torch.no_grad():
+            x_r = self.extract_feat_r(img)
 
         losses = dict()
 
         loss_decode_l = self._decode_head_forward_train_l(x_l, img_metas,
                                                       gt_semantic_seg)
-        loss_decode_r = self._decode_head_forward_train_r(x_r, img_metas,
-                                                      gt_semantic_seg)
         losses.update(loss_decode_l)
-        losses.update(loss_decode_r)
 
         if self.with_auxiliary_head:
             loss_aux_l = self._auxiliary_head_forward_train_l(
                 x_l, img_metas, gt_semantic_seg)
-            loss_aux_r = self._auxiliary_head_forward_train_r(
-                x_r, img_metas, gt_semantic_seg)
             losses.update(loss_aux_l)
-            losses.update(loss_aux_r)
 
-        #TODO add the weights for consistency loss
         pred_l = F.softmax(self.decode_head_l.forward(x_l), 1)
         pred_r = F.softmax(self.decode_head_r.forward(x_r), 1)
         losses['consistency_loss'] = self.train_cfg.consistency_loss_weight * \
-            (F.mse_loss(pred_l, pred_r.detach()) + F.mse_loss(pred_r, pred_l.detach()))
+            F.mse_loss(pred_l, pred_r.detach())
 
         return losses
 
@@ -346,7 +340,7 @@ class ParallelEncoderDecoder(BaseSegmentor):
 
 
 @SEGMENTORS.register_module()
-class CascadeParallelEncoderDecoder(ParallelEncoderDecoder):
+class CascadeMeanTeacherEncoderDecoder(ParallelEncoderDecoder):
     """Cascade Parallel Encoder Decoder segmentors.
 
     CascadeParallelEncoderDecoder almost the same as ParallelEncoderDecoder, 
@@ -363,7 +357,7 @@ class CascadeParallelEncoderDecoder(ParallelEncoderDecoder):
                  test_cfg=None,
                  pretrained=None):
         self.num_stages = num_stages
-        super(CascadeParallelEncoderDecoder, self).__init__(
+        super(CascadeMeanTeacherEncoderDecoder, self).__init__(
             backbone=backbone,
             decode_head=decode_head,
             neck=neck,
@@ -444,25 +438,6 @@ class CascadeParallelEncoderDecoder(ParallelEncoderDecoder):
 
         return losses
 
-    def _decode_head_forward_train_r(self, x, img_metas, gt_semantic_seg):
-        """Run forward function and calculate loss for decode head in
-        training."""
-        losses = dict()
-
-        loss_decode = self.decode_head_r[0].forward_train(
-            x, img_metas, gt_semantic_seg, self.train_cfg)
-
-        losses.update(add_prefix(loss_decode, 'decode_r_0'))
-
-        for i in range(1, self.num_stages):
-            # forward test again, maybe unnecessary for most methods.
-            prev_outputs = self.decode_head_r[i - 1].forward_test(
-                x, img_metas, self.test_cfg)
-            loss_decode = self.decode_head_r[i].forward_train(
-                x, prev_outputs, img_metas, gt_semantic_seg, self.train_cfg)
-            losses.update(add_prefix(loss_decode, f'decode_r_{i}'))
-
-        return losses
 
     def forward_train(self, img, img_metas, gt_semantic_seg):
         """Forward function for training.
@@ -480,26 +455,23 @@ class CascadeParallelEncoderDecoder(ParallelEncoderDecoder):
         Returns:
             dict[str, Tensor]: a dictionary of loss components
         """
+        self._update_ema_variables()
+        self.cur_iter += 1
 
         x_l = self.extract_feat_l(img)
-        x_r = self.extract_feat_r(img)
+        with torch.no_grad():
+            x_r = self.extract_feat_r(img)
 
         losses = dict()
 
         loss_decode_l = self._decode_head_forward_train_l(x_l, img_metas,
                                                       gt_semantic_seg)
-        loss_decode_r = self._decode_head_forward_train_r(x_r, img_metas,
-                                                      gt_semantic_seg)
         losses.update(loss_decode_l)
-        losses.update(loss_decode_r)
 
         if self.with_auxiliary_head:
             loss_aux_l = self._auxiliary_head_forward_train_l(
                 x_l, img_metas, gt_semantic_seg)
-            loss_aux_r = self._auxiliary_head_forward_train_r(
-                x_r, img_metas, gt_semantic_seg)
             losses.update(loss_aux_l)
-            losses.update(loss_aux_r)
 
         pred_l_list = []
         prev_output = self.decode_head_l[0].forward_test(
@@ -511,13 +483,14 @@ class CascadeParallelEncoderDecoder(ParallelEncoderDecoder):
             prev_output = cur_output
 
         pred_r_list = []
-        prev_output = self.decode_head_r[0].forward_test(
-            x_r, img_metas, self.test_cfg)
-        pred_r_list.append(prev_output)
-        for i in range(1, self.num_stages):
-            cur_output = self.decode_head_r[i].forward(x_r, prev_output)
-            pred_r_list.append(cur_output)
-            prev_output = cur_output
+        with torch.no_grad():
+            prev_output = self.decode_head_r[0].forward_test(
+                x_r, img_metas, self.test_cfg)
+            pred_r_list.append(prev_output)
+            for i in range(1, self.num_stages):
+                cur_output = self.decode_head_r[i].forward(x_r, prev_output)
+                pred_r_list.append(cur_output)
+                prev_output = cur_output
 
         confidense_threshold = self.train_cfg.get('confidense_threshold', 0.5)
         ignore_index = self.train_cfg.get('ignore_index', 255)
@@ -539,14 +512,11 @@ class CascadeParallelEncoderDecoder(ParallelEncoderDecoder):
                 aux_one_hot_label_l[aux_max_pred_l < confidense_threshold] = ignore_index
                 aux_one_hot_label_r[aux_max_pred_r < confidense_threshold] = ignore_index
                 losses['consistency_loss'] = self.train_cfg.consistency_loss_weight * \
-                    (F.cross_entropy(pred_l_list[-1], one_hot_label_r, ignore_index=ignore_index, reduction='none').mean() + \
-                        F.cross_entropy(pred_r_list[-1], one_hot_label_l, ignore_index=ignore_index, reduction='none').mean() + \
-                        0.4 * (F.cross_entropy(pred_l_list[-2], aux_one_hot_label_r, ignore_index=ignore_index, reduction='none').mean() + \
-                        F.cross_entropy(pred_r_list[-2], aux_one_hot_label_l, ignore_index=ignore_index, reduction='none').mean()))
+                    (F.cross_entropy(pred_l_list[-1], one_hot_label_r, ignore_index=ignore_index, reduction='none').mean() + \                        
+                        0.4 * (F.cross_entropy(pred_l_list[-2], aux_one_hot_label_r, ignore_index=ignore_index, reduction='none').mean()))
             else:
                 losses['consistency_loss'] = self.train_cfg.consistency_loss_weight * \
-                    (F.cross_entropy(pred_l_list[-1], one_hot_label_r, ignore_index=ignore_index, reduction='none').mean() + \
-                        F.cross_entropy(pred_r_list[-1], one_hot_label_l, ignore_index=ignore_index, reduction='none').mean())
+                    F.cross_entropy(pred_l_list[-1], one_hot_label_r, ignore_index=ignore_index, reduction='none').mean()
         else:
             T = self.train_cfg.get('temperature', 2) # we ensure that T > 1
             pred_l = F.softmax(pred_l_list[-1], 1)
@@ -563,10 +533,9 @@ class CascadeParallelEncoderDecoder(ParallelEncoderDecoder):
                 sharpe_aux_l = F.normalize(torch.pow(aux_pred_l, T), dim=1, p=1)
                 sharpe_aux_r = F.normalize(torch.pow(aux_pred_r, T), dim=1, p=1)
                 losses['consistency_loss'] = self.train_cfg.consistency_loss_weight * \
-                    (F.mse_loss(pred_l, sharpe_label_r.detach()) + F.mse_loss(pred_r, sharpe_label_l.detach()) + \
-                        0.4 * (F.mse_loss(aux_pred_l, sharpe_aux_r.detach()) + F.mse_loss(aux_pred_r, sharpe_aux_l.detach())))
+                    (F.mse_loss(pred_l, sharpe_label_r.detach()) + \
+                        0.4 * F.mse_loss(aux_pred_l, sharpe_aux_r.detach()))
             else:
                 losses['consistency_loss'] = self.train_cfg.consistency_loss_weight * \
-                    (F.mse_loss(pred_l, sharpe_label_r.detach()) + F.mse_loss(pred_r, sharpe_label_l.detach())) 
-
+                    F.mse_loss(pred_l, sharpe_label_r.detach()) 
         return losses

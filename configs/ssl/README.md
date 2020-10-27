@@ -39,3 +39,6 @@
 | OCRNet  | HRNetV2p-W48 | 2975 Labeled | Yes (loss-weight=50) | 512x1024 |  8 Labeled  |   80000 |    0.01  |   81.31   |
 | OCRNet  | HRNetV2p-W48 | 2975 Labeled + 3000 Unlabeled | Yes (loss-weight=10) | 512x1024 |  8 Labeled + 8 Unlabeled  |  80000 |    0.01  |   81.27   |
 | OCRNet  | HRNetV2p-W48 | 2975 Labeled + 3000 Unlabeled | Yes (loss-weight=50) | 512x1024 |  8 Labeled + 8 Unlabeled  |  80000 |    0.01  |   81.36   |
+| OCRNet  | HRNetV2p-W48 | 2975 Labeled + 3000 Unlabeled | Yes (loss-weight=20) + Sharpening (T=2) | 512x1024 |  8 Labeled + 8 Unlabeled  |  80000 |    0.01  |   81.48   |
+| OCRNet  | HRNetV2p-W48 | 2975 Labeled + 3000 Unlabeled | Yes (loss-weight=20) + Sharpening (T=2) + Aux-Head | 512x1024 |  8 Labeled + 8 Unlabeled  |  80000 |    0.01  |   81.57   |
+| OCRNet  | HRNetV2p-W48 | 2975 Labeled + 3000 Unlabeled | Yes (loss-weight=20) + Sharpening (T=3) + Aux-Head | 512x1024 |  8 Labeled + 8 Unlabeled  |  80000 |    0.01  |   81.78   |
