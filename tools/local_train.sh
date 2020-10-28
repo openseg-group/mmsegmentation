@@ -15,5 +15,5 @@ ${PYTHON} -m torch.distributed.launch --nproc_per_node=$GPUS --master_port=$PORT
     $(dirname "$0")/train.py $CONFIG --launcher pytorch --seed 0 --work-dir "$(dirname $0)/../../mmsegmentation-logs" \
     ${@:3}
 
-# ./tools/local_train.sh configs/ssl/ssl_deeplabv3plus_r101-d16_512x1024_40k_b16_cityscapes_baseline_only_label.py 4
-# ./tools/local_train.sh configs/ssl/ssl_ocrnet_hr48_512x1024_80k_b16_cityscapes_unlabel_3k_clossw_10.py 4
+# ./tools/local_train.sh configs/ssl/mt_ocrnet_hr48_512x1024_80k_b16_cityscapes_u3k_w20_soft_sharpen_aux_t2.py 4
+# ./tools/local_train.sh configs/ssl/mt_ocrnet_hr48_512x1024_80k_b16_cityscapes_u3k_w20_soft_sharpen_aux_t2.py 4

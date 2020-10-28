@@ -58,11 +58,11 @@ if __name__ == '__main__':
     # dir2file(path='/home/yuhui/teamdrive/dataset/cityscapes/coarse/image', file='/home/yuhui/teamdrive/dataset/cityscapes/coarse.txt')
 
     ''' sample a set of unlabeled images '''
-    # random_sample(file='/home/yuhui/teamdrive/dataset/cityscapes/coarse.txt', sub_file='/home/yuhui/teamdrive/dataset/cityscapes/coarse3k_v1.txt', sample_num=3000)
+    random_sample(file='/home/yuhui/teamdrive/dataset/cityscapes/coarse.txt', sub_file='/home/yuhui/teamdrive/dataset/cityscapes/coarse3k_v1.txt', sample_num=3000)
     # random_sample(file='/home/yuhui/teamdrive/dataset/cityscapes/coarse.txt', sub_file='/home/yuhui/teamdrive/dataset/cityscapes/coarse3k_v2.txt', sample_num=3000)
     # random_sample(file='/home/yuhui/teamdrive/dataset/cityscapes/coarse.txt', sub_file='/home/yuhui/teamdrive/dataset/cityscapes/coarse3k_v3.txt', sample_num=3000)
     
-    post_uniform_select(file='/home/yuhui/teamdrive/dataset/cityscapes/train_extra_3000.txt', post_file='/home/yuhui/teamdrive/dataset/cityscapes/uniform_coarse3k.txt')
+    # post_uniform_select(file='/home/yuhui/teamdrive/dataset/cityscapes/train_extra_3000.txt', post_file='/home/yuhui/teamdrive/dataset/cityscapes/uniform_coarse3k.txt')
 
 
 

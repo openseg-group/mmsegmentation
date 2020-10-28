@@ -71,7 +71,7 @@ class FixMatchEncoderDecoder(BaseSegmentor):
             pretrained (str, optional): Path to pre-trained weights.
                 Defaults to None.
         """
-        super(ParallelEncoderDecoder, self).init_weights(pretrained)
+        super(FixMatchEncoderDecoder, self).init_weights(pretrained)
         self.backbone_l.init_weights(pretrained=pretrained)
         self.decode_head_l.init_weights()
         if self.with_auxiliary_head:

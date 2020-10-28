@@ -6,7 +6,7 @@ _base_ = [
 ]
 norm_cfg = dict(type='SyncBN', requires_grad=True)
 model = dict(
-    type='CascadeEncoderDecoder',
+    type='CascadeParallelEncoderDecoder',
     pretrained='open-mmlab://msra/hrnetv2_w48',
     backbone=dict(
         extra=dict(
@@ -28,7 +28,7 @@ model = dict(
             norm_cfg=norm_cfg,
             align_corners=True,
             loss_decode=dict(
-                type='PseudoCrossEntropyLoss', use_sigmoid=False, loss_weight=0.4, confidense_threshold=0.5)),
+                type='CrossEntropyLoss', use_sigmoid=False, loss_weight=0.4)),
         dict(
             type='OCRHead',
             in_channels=[48, 96, 192, 384],
@@ -41,12 +41,15 @@ model = dict(
             norm_cfg=norm_cfg,
             align_corners=True,
             loss_decode=dict(
-                type='PseudoCrossEntropyLoss', use_sigmoid=False, loss_weight=1.0, confidense_threshold=0.5)),
+                type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0)),
     ]
 )
 
 # model training and testing settings
-train_cfg = dict()
+train_cfg = dict(consistency_loss_weight=10,
+                 consistency_w_hard_label=False,
+                 auxiliary_consistency=True,
+                 temperature=3) # set the weight for the consistency loss
 test_cfg = dict(mode='whole')
 
 optimizer = dict(lr=0.01)
