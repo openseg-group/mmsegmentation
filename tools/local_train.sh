@@ -5,7 +5,7 @@ $PYTHON -m pip install mmcv-full==1.1.5
 $PYTHON -m pip install -e .
 $PYTHON -m pip install cityscapesscripts
 
-CONFIG=$1
+CONFIG=$1 # fcn_hr18_512x1024_40k_cityscapes_baseline
 GPUS=$2
 # PRETRAINED_WEIGHTS=$3
 PORT=${PORT:-29500}

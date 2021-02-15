@@ -205,8 +205,10 @@ class RMILoss(nn.Module):
 				 rmi_pool_stride=3,
 				 loss_weight_lambda=0.5,
 				 loss_weight=1.0,
-				 lambda_way=1):
+				 lambda_way=1,
+				 use_sigmoid=False):
 		super(RMILoss, self).__init__()
+		self.use_sigmoid = use_sigmoid
 		self.num_classes = num_classes
 		# radius choices
 		assert rmi_radius in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]

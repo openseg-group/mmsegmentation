@@ -523,8 +523,8 @@ class CascadeParallelEncoderDecoder(ParallelEncoderDecoder):
         ignore_index = self.train_cfg.get('ignore_index', 255)
         # compute the consistency loss across the two models.
         if self.train_cfg.get('consistency_w_hard_label', False):
-            max_pred_l, one_hot_label_l = torch.max(pred_l_list[-1], dim=1)
-            max_pred_r, one_hot_label_r = torch.max(pred_r_list[-1], dim=1) # n x h x w
+            max_pred_l, one_hot_label_l = torch.max(F.softmax(pred_l_list[-1] 1), dim=1)
+            max_pred_r, one_hot_label_r = torch.max(F.softmax(pred_r_list[-1] 1), dim=1) # n x h x w
             #TODO set the less confident predictions as ignore (e.g., 255)
             one_hot_label_l = one_hot_label_l.long()
             one_hot_label_r = one_hot_label_r.long()
@@ -532,8 +532,8 @@ class CascadeParallelEncoderDecoder(ParallelEncoderDecoder):
             one_hot_label_r[max_pred_r < confidense_threshold] = ignore_index
 
             if self.train_cfg.get('auxiliary_consistency', False):
-                aux_max_pred_l, aux_one_hot_label_l = torch.max(pred_l_list[-2], dim=1)
-                aux_max_pred_r, aux_one_hot_label_r = torch.max(pred_r_list[-2], dim=1)
+                aux_max_pred_l, aux_one_hot_label_l = torch.max(F.softmax(pred_l_list[-2], 1), dim=1)
+                aux_max_pred_r, aux_one_hot_label_r = torch.max(F.softmax(pred_r_list[-2], 1), dim=1)
                 aux_one_hot_label_l = aux_one_hot_label_l.long()
                 aux_one_hot_label_r = aux_one_hot_label_r.long()
                 aux_one_hot_label_l[aux_max_pred_l < confidense_threshold] = ignore_index

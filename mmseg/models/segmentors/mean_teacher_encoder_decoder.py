@@ -6,7 +6,7 @@ import torchvision.transforms as transforms
 import numpy as np
 
 from mmseg.core import add_prefix
-from mmseg.ops import resize
+from mmseg.ops import resize, TensorColorJitter
 from .. import builder
 from ..builder import SEGMENTORS
 from .base import BaseSegmentor
@@ -48,8 +48,8 @@ class MeanTeacherEncoderDecoder(BaseSegmentor):
         self.cur_iter = 0
         self.ema_decay = 0.999
 
-        # self.strong_aug = transforms.RandomApply([transforms.ColorJitter(0.5, 0.5, 0.5, 0.25)], p=0.5)
-        self.strong_aug = transforms.ColorJitter(0.5, 0.5, 0.5, 0.25)
+        #TODO: implement a ColorJitter augmentation that supports tensors
+        self.strong_aug = TensorColorJitter(0.5, 0.5, 0.5, 0.25)
 
         # https://github.com/pytorch/vision/issues/528
         self.mean = torch.tensor([123.675, 116.28, 103.53], dtype=torch.float32)
