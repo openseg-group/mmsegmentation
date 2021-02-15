@@ -94,6 +94,17 @@
 | DeepLabv3+  | R-101-D8 | 512x1024  | 16 |  40000 |  11  |   2.64    |  80.13 | -  | 
 | DeepLabv3+  | R-101-D8 | 512x1024  | 16 |  80000 |  11  |   2.64    |  80.86 | -  | 
 
+#### Results based on PaddlePaddle ImageNet pretrained HRNetV2p-W48
+| Method |      Backbone      | Crop Size | Batch Size | Lr schd | Mem (GB) | Inf time (fps) | mIoU  | mIoU(ms+flip)|
+|--------|--------------------|-----------|-----------|--------:|----------|----------------|------:|--------------:|
+| FCN | HRNetV2p-W48   | 512x1024  |  16  | 40000 | -        | -     | 80.66 | -  |
+| FCN | HRNetV2p-W48 (Paddle)  | 512x1024  |  16  | 40000 | -        | -     | 81.60 | -  |
+| FCN+RMI | HRNetV2p-W48   | 512x1024  |  16  | 40000 | -        | -     | 81.46 | -  |
+| FCN+RMI | HRNetV2p-W48 (Paddle)  | 512x1024  |  16  | 40000 | -        | -     | 81.95 | -  |
+| OCRNet+RMI | HRNetV2p-W48   | 512x1024  |  16  | 40000 | -        | -     | 82.43 | -  |
+| OCRNet+RMI | HRNetV2p-W48 (Paddle)  | 512x1024  |  16  | 40000 | -        | -     | 82.76 | -  |
+
+
 ### ADE20K
 
 #### HRNet backbone
